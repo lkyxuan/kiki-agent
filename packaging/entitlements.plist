@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Entitlements the Kiki Agent (the bundled Node, packaged inside Contents/Helpers/KikiAgent.app) needs under the Hardened Runtime:
+     V8 needs JIT; native modules (.node) must be loadable;
+     Under the Hardened Runtime, any privacy permission not listed here won't even trigger a system prompt — it's denied outright — so list every one Kiki uses. -->
+<plist version="1.0">
+<dict>
+  <key>com.apple.security.cs.allow-jit</key><true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key><true/>
+  <key>com.apple.security.cs.disable-library-validation</key><true/>
+  <key>com.apple.security.automation.apple-events</key><true/>
+  <key>com.apple.security.personal-information.calendars</key><true/>
+  <key>com.apple.security.personal-information.addressbook</key><true/>
+  <key>com.apple.security.personal-information.photos-library</key><true/>
+  <key>com.apple.security.device.audio-input</key><true/>
+  <key>com.apple.security.device.camera</key><true/>
+</dict>
+</plist>

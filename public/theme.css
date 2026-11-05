@@ -1,0 +1,80 @@
+/* Kiki's colors and fonts: shared by the chat page and the settings page.
+   Light / dark variants, following the system by default; "Appearance" in settings can pin one of them (theme.js adds data-theme to <html>).
+   Colors follow macOS system colors: content area white / dark gray, sidebar one step darker, separators in translucent black and white, accent is Kiki's indigo. */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;            /* content area */
+  --side: #f2f2f5;          /* left and right sidebars */
+  --grouped: #f2f2f4;       /* settings page background (grouped list) */
+  --card: #ffffff;          /* cards, groups */
+  --raised: #ffffff;        /* things that float: input fields, popovers */
+  --line: rgba(0, 0, 0, .09);
+  --line-strong: rgba(0, 0, 0, .14);
+  --divider: rgba(0, 0, 0, .12);   /* dividers between the three columns: pure black in dark mode, like Notes and Mail */
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --faint: #a1a1a6;
+  --hover: rgba(0, 0, 0, .045);
+  --active: rgba(0, 0, 0, .075);
+  --fill: rgba(118, 118, 128, .12);  /* code background, segmented control background */
+  --accent: #5b6cf0;
+  --accent-hover: #4d5ee6;
+  --accent-soft: rgba(91, 108, 240, .12);
+  --on-accent: #ffffff;
+  --me: var(--accent);
+  --me-text: #ffffff;
+  --ok: #248a3d; --warn: #b25000; --err: #d70015;
+  --switch: #34c759;
+  --note: #fff7e0;
+  --busy: #5b6cf0;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .05);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, .18), 0 2px 8px rgba(0, 0, 0, .08);
+  --scrim: rgba(0, 0, 0, .22);
+  --material: rgba(255, 255, 255, .78);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #19191b; --side: #2a2a2d; --grouped: #1e1e20; --card: #333337; --raised: #252528;
+    --line: rgba(255, 255, 255, .08); --line-strong: rgba(255, 255, 255, .14); --divider: #000000;
+    --text: #f5f5f7; --muted: #a1a1a6; --faint: #6e6e73;
+    --hover: rgba(255, 255, 255, .06); --active: rgba(255, 255, 255, .1); --fill: rgba(118, 118, 128, .24);
+    --accent: #7c8aff; --accent-hover: #8e9aff; --accent-soft: rgba(124, 138, 255, .18); --on-accent: #ffffff;
+    --me: #5b6cf0; --me-text: #ffffff;
+    --ok: #30d158; --warn: #ffb340; --err: #ff6961; --switch: #30d158; --note: #2e2816; --busy: #8e9aff;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+    --shadow-lg: 0 24px 64px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .08);
+    --scrim: rgba(0, 0, 0, .45);
+    --material: rgba(25, 25, 27, .8);
+  }
+}
+/* Dark chosen manually: same values as above */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #19191b; --side: #2a2a2d; --grouped: #1e1e20; --card: #333337; --raised: #252528;
+  --line: rgba(255, 255, 255, .08); --line-strong: rgba(255, 255, 255, .14); --divider: #000000;
+  --text: #f5f5f7; --muted: #a1a1a6; --faint: #6e6e73;
+  --hover: rgba(255, 255, 255, .06); --active: rgba(255, 255, 255, .1); --fill: rgba(118, 118, 128, .24);
+  --accent: #7c8aff; --accent-hover: #8e9aff; --accent-soft: rgba(124, 138, 255, .18); --on-accent: #ffffff;
+  --me: #5b6cf0; --me-text: #ffffff;
+  --ok: #30d158; --warn: #ffb340; --err: #ff6961; --switch: #30d158; --note: #2e2816; --busy: #8e9aff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .08);
+  --scrim: rgba(0, 0, 0, .45);
+  --material: rgba(25, 25, 27, .8);
+}
+
+/* Thin scrollbars, like macOS overlay scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-track { background: transparent; }
+::selection { background: var(--accent-soft); }
+:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 1px; }
+/* Input fields draw their own blue focus ring, so don't stack another one */
+input:focus-visible, textarea:focus-visible { outline: none; }

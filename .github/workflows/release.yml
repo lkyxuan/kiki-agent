@@ -1,0 +1,28 @@
+# Release: bump the version in package.json and merge into main (or run manually from the Actions page).
+# The private repo does not build here (GitHub charges 10x for Mac runners on private repos); instead it notifies the public lkyxuan/kiki,
+# which uses the public repo's free Mac runners to pull this commit's code, build, sign, and publish the release (see build-from-pro.yml).
+# Installers are published in lkyxuan/kiki's Releases, and installed copies of Kiki keep updating from there. If this version has already been released, skip.
+# Requires the secret KIKI_PUBLIC_TOKEN: a token that can operate on lkyxuan/kiki (repo scope, or Fine-grained with Contents + Workflows read/write).
+name: release
+on:
+  push:
+    branches: [main]
+    paths: [package.json]
+  workflow_dispatch:
+env:
+  PUBLIC_REPO: lkyxuan/kiki
+jobs:
+  release:
+    if: github.repository != 'lkyxuan/kiki'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Notify the public repo to build and release
+        env:
+          GH_TOKEN: ${{ secrets.KIKI_PUBLIC_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "::warning::KIKI_PUBLIC_TOKEN is not configured, so $PUBLIC_REPO cannot be notified; skipping this time"; exit 0; fi
+          v=$(node -p 'require("./package.json").version')
+          if gh release view "v$v" -R "$PUBLIC_REPO" >/dev/null 2>&1; then echo "v$v has already been released, skipping"; exit 0; fi
+          gh api "repos/$PUBLIC_REPO/dispatches" -f event_type=kiki-release -f "client_payload[sha]=$GITHUB_SHA" -f "client_payload[version]=$v"
+          echo "Notified $PUBLIC_REPO to build v$v (commit $GITHUB_SHA); track progress at https://github.com/$PUBLIC_REPO/actions/workflows/build-from-pro.yml"

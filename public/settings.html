@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiki Settings</title>
+<link rel="icon" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
+<script src="/bots.js"></script>
+<script>if (/[?&]embed=1/.test(location.search)) document.documentElement.classList.add("embed");</script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--grouped); color: var(--text); font: 14px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+  /* Two columns, like System Settings: categories on the left, only the selected section on the right */
+  .layout { display: flex; min-height: 100%; }
+  nav { width: 220px; flex: none; background: var(--side); border-right: 1px solid var(--divider); padding: 14px 10px 10px; position: sticky; top: 0; height: 100vh; overflow: auto; display: flex; flex-direction: column; gap: 2px; }
+  #nav-items { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 4px 8px; border: 0; border-radius: 7px; background: none; text-align: left; font-size: 13.5px; white-space: nowrap; }
+  .nav-item:hover { background: var(--hover); }
+  .nav-item.on { background: var(--accent); color: var(--on-accent); }
+  .nav-item .ic { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; flex: none; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.12); }
+  .nav-item .ic svg { width: 14px; height: 14px; }
+  /* Bottom left: version number + update button; clicking shows update details on the right */
+  #ver-box { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 8px 6px 2px 8px; border-top: 1px solid var(--line); }
+  #ver { flex: 1; min-width: 0; color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #ver-btn { flex: none; min-height: 24px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--raised); box-shadow: var(--shadow-sm); font-size: 12px; font-weight: 500; white-space: nowrap; }
+  #ver-btn:hover { background: var(--hover); }
+  #ver-btn.new { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+  #ver-btn.on:not(.new) { border-color: var(--accent); color: var(--accent); }
+  .about-kiki { display: flex; align-items: center; gap: 14px; }
+  .about-kiki img { border-radius: 12px; flex: none; }
+  .about-kiki b { font-size: 16px; }
+  .about-kiki .slogan { margin-left: 6px; font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: .04em; }
+  .content { flex: 1; min-width: 0; }
+  .pane { display: none; }
+  .pane.on { display: block; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 22px 28px 60px; }
+  .top { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 0 4px 12px; }
+  .top h1 { margin: 0; font-size: 20px; font-weight: 700; }
+  .embed a.back { display: none; }
+  .embed .top { padding-top: 4px; }
+  a.back { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 7px; color: var(--text); text-decoration: none; background: var(--card); box-shadow: var(--shadow-sm); }
+  a.back:hover { background: var(--hover); }
+  a { color: var(--accent); }
+  .banner { display: none; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--note); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; }
+  .banner.on { display: flex; }
+  /* Each settings group is a rounded card, like System Settings */
+  /* Each section: a heading + description, followed by one or more rounded cards */
+  .pane h2 { margin: 0 0 16px; padding: 0 4px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; }
+  .pane h2 small { order: 2; flex-basis: 100%; font-weight: 400; color: var(--muted); font-size: 13px; }
+  .pane h2 .right { margin-left: auto; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; box-shadow: var(--shadow-sm); }
+  .card > p.msg:first-child, .card > .msg:only-child { margin-top: 0; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 600px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .field label { font-size: 12.5px; color: var(--muted); }
+  input[type=text], input[type=password], textarea { width: 100%; min-height: 32px; padding: 5px 10px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--raised); outline: 0; transition: border-color .15s, box-shadow .15s; }
+  input[type=text]:focus, input[type=password]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  input::placeholder, textarea::placeholder { color: var(--faint); }
+  input:disabled { opacity: .55; }
+  textarea { min-height: 220px; font-family: var(--mono); font-size: 12.5px; line-height: 1.6; resize: vertical; padding: 8px 10px; }
+  .field select { width: 100%; min-height: 32px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--raised); color: var(--text); font-size: 13px; }
+  .toggle-row select { min-height: 28px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--raised); box-shadow: var(--shadow-sm); font-size: 13px; }
+  .src { font-size: 12px; color: var(--muted); }
+  .src.external { color: var(--warn); }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  /* Buttons: standard macOS button / accent button */
+  .btn { min-height: 28px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--raised); box-shadow: var(--shadow-sm); font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .btn:hover { background: var(--hover); }
+  .btn:active { background: var(--active); }
+  .btn.primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+  .btn.primary:hover { background: var(--accent-hover); }
+  .btn:disabled { opacity: .4; }
+  .msg { font-size: 12.5px; color: var(--muted); }
+  .msg.ok { color: var(--ok); } .msg.err { color: var(--err); }
+  p.msg { margin: 12px 0 0; line-height: 1.6; }
+  /* Models page: one row per purpose, with a dropdown on the right */
+  .mrole { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .card .mrole:first-child { border-top: 0; padding-top: 2px; }
+  .card .mrole:last-child { padding-bottom: 2px; }
+  .mrole .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .mrole .t b { font-weight: 500; font-size: 13.5px; }
+  .mrole .t span { font-size: 12px; color: var(--muted); }
+  .mrole select { width: 250px; flex: none; min-height: 30px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--raised); color: var(--text); font-size: 13px; }
+  .mrole select.follow { color: var(--muted); }
+  @media (max-width: 600px) { .mrole { flex-wrap: wrap; } .mrole select { width: 100%; } }
+  .sec { font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 4px 6px; }
+  /* Providers page: list on the left, details on the right (like Cherry Studio) */
+  .wrap:has(#pane-providers.on) { max-width: 880px; }
+  .pv { display: flex; padding: 0; overflow: hidden; min-height: 520px; }
+  .pv-list { width: 220px; flex: none; border-right: 1px solid var(--line); display: flex; flex-direction: column; max-height: 680px; }
+  .pv-list .q { width: auto; margin: 10px; min-width: 0; padding: 5px 10px; border: 0; border-radius: 7px; background: var(--fill); font-size: 13px; outline: none; }
+  .pv-items { overflow: auto; padding-bottom: 8px; }
+  .pv-g { font-size: 11.5px; font-weight: 600; color: var(--muted); padding: 8px 14px 3px; }
+  button.pv-g { border: 0; background: none; width: 100%; text-align: left; cursor: pointer; }
+  .pv-it { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 14px; border: 0; background: none; text-align: left; font-size: 13px; cursor: pointer; }
+  .pv-it:hover { background: var(--hover); }
+  .pv-it.on { background: var(--accent-soft); }
+  .pv-it .lg { width: 22px; height: 22px; flex: none; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+  .pv-it .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pv-it .dot { margin: 0; }
+  .pv-d { flex: 1; min-width: 0; padding: 16px 20px; }
+  .pv-d h3 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pv-d .tag { font-size: 11.5px; font-weight: 500; padding: 1px 7px; border-radius: 6px; background: var(--fill); color: var(--muted); }
+  .pv-d .tag.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
+  .pv-d .lbl { font-size: 12px; color: var(--muted); margin: 16px 0 6px; display: flex; align-items: center; gap: 8px; }
+  .pv-d .lbl .show { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .pv-d .acct { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pv-d .acct .st { font-size: 12.5px; color: var(--muted); }
+  .pv-d .flow { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--fill); font-size: 13px; line-height: 1.6; }
+  .pv-d .flow .row { margin-top: 8px; }
+  .pv-d .flow input { flex: 1; min-width: 200px; }
+  .pv-d .flow code { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+  .pv-d .err { color: var(--err); }
+  .pv-d .mq { width: 100%; margin-bottom: 6px; }
+  .pv-d .mlist { max-height: 340px; overflow: auto; }
+  .pv-d .mrow { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 13px; cursor: pointer; }
+  .pv-d .mrow:first-child { border-top: 0; }
+  .pv-d .mrow .nm { flex: 1; min-width: 0; }
+  .pv-d .mrow .mt { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; margin-left: 4px; }
+  .pv-d .mrow input { flex: none; width: auto; margin: 0; }
+  .pv-d details { margin-top: 18px; font-size: 13px; }
+  .pv-d details summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+  .pv-empty { color: var(--muted); padding: 40px 0; text-align: center; }
+  @media (max-width: 640px) { .pv { flex-direction: column; } .pv-list { width: auto; border-right: 0; border-bottom: 1px solid var(--line); max-height: 260px; } }
+  .mono { font-family: var(--mono); font-size: 12px; word-break: break-all; }
+  .bao { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .bao .avatar.bot { background: none; } .bao .avatar.bot svg { width: 100%; height: 100%; display: block; }
+  .bao .avatar { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 700; flex: none; }
+  .bao .name { font-weight: 500; flex: 1; }
+  .editor { padding: 4px 0 12px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: var(--faint); }
+  .dot.ok { background: var(--switch); }
+  h3.sub { font-size: 13px; font-weight: 600; color: var(--muted); margin: 4px 4px 6px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  h3.sub small { font-weight: 400; color: var(--muted); font-size: 12px; }
+  .toggle-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .card .toggle-row:first-child, .card .bao-wrap:first-child .bao { border-top: 0; padding-top: 2px; }
+  .toggle-row .t { flex: 1; min-width: 0; }
+  .toggle-row .t b { font-weight: 500; display: block; }
+  .toggle-row .t span { font-size: 12.5px; color: var(--muted); }
+  /* Switch: the green iOS / macOS toggle */
+  .switch { position: relative; width: 38px; height: 22px; flex: none; }
+  .switch input { opacity: 0; width: 100%; height: 100%; margin: 0; position: absolute; inset: 0; z-index: 1; }
+  .switch i { position: absolute; inset: 0; border-radius: 11px; background: var(--fill); box-shadow: inset 0 0 0 .5px var(--line); transition: background .2s; }
+  .switch i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25), 0 0 0 .5px rgba(0,0,0,.04); transition: transform .2s cubic-bezier(.2,.8,.2,1); }
+  .switch input:checked + i { background: var(--switch); }
+  .switch input:checked + i::after { transform: translateX(16px); }
+  .switch input:focus-visible + i { outline: 3px solid var(--accent-soft); outline-offset: 1px; }
+  label.check { display: flex; align-items: center; gap: 8px; min-height: 32px; }
+  label.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+  /* Appearance: three small window thumbnails, like the macOS "Appearance" settings */
+  .looks { display: flex; gap: 18px; flex-wrap: wrap; }
+  .look { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); position: relative; }
+  .look input { position: absolute; opacity: 0; pointer-events: none; }
+  .look .pic { width: 96px; height: 62px; border-radius: 8px; overflow: hidden; display: flex; box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-sm); transition: box-shadow .15s; }
+  .look input:checked ~ .pic { box-shadow: 0 0 0 1px var(--card), 0 0 0 4px var(--accent); }
+  .look input:checked ~ span { color: var(--text); font-weight: 500; }
+  .look input:focus-visible ~ .pic { outline: 3px solid var(--accent-soft); outline-offset: 4px; }
+  .pic .half { flex: 1; display: flex; padding: 7px 0 0 7px; }
+  .pic .lt { background: #f2f2f5; } .pic .dk { background: #2a2a2d; }
+  .pic .w { flex: 1; border-radius: 4px 0 0 0; display: flex; flex-direction: column; gap: 4px; padding: 6px; }
+  .pic .lt .w { background: #fff; box-shadow: -1px -1px 0 rgba(0,0,0,.06); } .pic .dk .w { background: #19191b; box-shadow: -1px -1px 0 rgba(255,255,255,.08); }
+  .pic .w i { display: block; height: 5px; border-radius: 3px; background: #5b6cf0; width: 60%; align-self: flex-end; }
+  .pic .w i + i { width: 75%; align-self: flex-start; }
+  .pic .lt .w i + i { background: #d8d8dc; } .pic .dk .w i + i { background: #48484c; }
+  /* Narrow screens: categories become a single row at the top that scrolls sideways */
+  @media (max-width: 640px) {
+    .layout { flex-direction: column; }
+    nav { width: 100%; height: auto; position: sticky; top: 0; z-index: 2; border-right: 0; border-bottom: 1px solid var(--line); padding: 8px 10px; }
+    #nav-items { flex-direction: row; overflow-x: auto; }
+    .nav-item { width: auto; }
+    #ver-box { margin-top: 4px; padding: 6px 2px 0; } /* keep the update entry point on narrow screens too */
+    .wrap { padding: 18px 16px 48px; }
+    .top { flex-direction: row; align-items: center; padding-bottom: 6px; }
+    .top h1 { font-size: 17px; }
+    .embed nav { padding-right: 56px; } /* leave room for the popup's × */
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav id="nav" aria-label="Settings categories">
+  <div class="top">
+    <a class="back" href="/">← Back to chat</a>
+    <h1>Settings</h1>
+  </div>
+  <div id="nav-items"></div>
+  <div id="ver-box">
+    <span id="ver"></span>
+    <button id="ver-btn" type="button">Check for updates</button>
+  </div>
+</nav>
+<main class="content">
+<div class="wrap">
+
+  <div class="banner" id="banner">
+    <span>Changes take effect after restarting Kiki.</span>
+    <button class="btn primary" id="restart">Restart now</button>
+    <span class="msg" id="restart-msg"></span>
+  </div>
+
+  <section class="pane" id="pane-update" data-title="Software update" data-nav="no">
+    <h2>Software update</h2>
+    <div class="card about-kiki">
+      <img src="/icon.svg" alt="" width="52" height="52">
+      <div><b>Kiki</b> <span class="slogan">Create the next miracle.</span><div class="msg" id="about-ver">Loading…</div><div class="mono msg" id="about-env" title="Config file"></div></div>
+    </div>
+    <div class="card">
+      <div id="upd" class="msg">Checking…</div>
+      <div id="upd-prog" hidden style="margin: 8px 0">
+        <progress max="100" value="0" style="width: 100%; height: 8px; accent-color: var(--accent, #2f7d4f)"></progress>
+        <div class="msg" id="upd-step"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="auto"> Update automatically when idle</label>
+      <div class="row" style="margin-top: 6px">
+        <button class="btn" id="check">Check for updates</button>
+        <button class="btn primary" id="apply" hidden>Update now</button>
+      </div>
+      <details id="upd-details" style="margin-top: 10px">
+        <summary class="msg" style="cursor: pointer">Details</summary>
+        <div class="msg" id="upd-info" style="margin-top: 6px"></div>
+        <div class="msg" style="margin-top: 8px">What changed in this version</div>
+        <pre id="upd-notes" class="mono" style="white-space: pre-wrap; max-height: 200px; overflow: auto; margin: 4px 0; font-size: 12px"></pre>
+        <div class="msg" style="margin-top: 8px">Update log <span class="mono">~/Library/Logs/Kiki/update.log</span></div>
+        <pre id="upd-log" class="mono" style="white-space: pre-wrap; max-height: 260px; overflow: auto; margin: 4px 0; font-size: 12px"></pre>
+      </details>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-look" data-title="Appearance">
+    <h2>Appearance <small>Only affects this device</small></h2>
+    <div class="card">
+    <div class="looks" role="radiogroup" aria-label="Appearance">
+      <label class="look"><input type="radio" name="theme" value="system"><div class="pic"><div class="half lt"><div class="w"><i></i><i></i></div></div><div class="half dk"><div class="w"><i></i><i></i></div></div></div><span>Follow system</span></label>
+      <label class="look"><input type="radio" name="theme" value="light"><div class="pic"><div class="half lt"><div class="w"><i></i><i></i></div></div></div><span>Light</span></label>
+      <label class="look"><input type="radio" name="theme" value="dark"><div class="pic"><div class="half dk"><div class="w"><i></i><i></i></div></div></div><span>Dark</span></label>
+    </div>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-model" data-title="Models">
+    <h2>Models <small>Every step that uses a model can be set separately. The dropdowns list the models you checked under "Providers".</small></h2>
+    <div class="card">
+      <div class="mrole"><div class="t"><b>Main model</b><span>Used for chatting and getting things done; the model button next to the input box switches this too</span></div><select id="main-model" aria-label="Main model"></select></div>
+    </div>
+    <div class="sec">By purpose (leave unset to follow the main model)</div>
+    <div class="card" id="roles"></div>
+    <div class="row" style="padding:0 4px"><span class="msg" id="roles-msg"></span></div>
+    <div class="card" id="no-models" hidden><p class="msg" style="margin:0">No models available yet. Connect a provider first, then enter an API key or sign in with a subscription.</p><div class="row"><button class="btn primary" data-goto="providers">Connect a provider</button></div></div>
+  </section>
+
+  <section class="pane" id="pane-providers" data-title="Providers">
+    <h2>Providers <small>Connect a provider and check the models you want; they'll show up on the "Models" page and in the model button next to the input box. Credentials are stored only on this computer.</small></h2>
+    <div class="card pv">
+      <div class="pv-list"><input type="text" class="q" id="prov-q" placeholder="Search providers" aria-label="Search providers"><div class="pv-items" id="prov-list"></div></div>
+      <div class="pv-d" id="prov-detail"></div>
+    </div>
+    <template id="ds-adv">
+      <details id="ds-adv-box"><summary>Advanced: store the DeepSeek API key in an environment variable / Keychain / 1Password</summary>
+        <div class="field" style="margin-top:10px">
+          <label for="DEEPSEEK_API_KEY">DEEPSEEK_API_KEY (stored in the .env in the data folder)</label>
+          <input type="text" id="DEEPSEEK_API_KEY" autocomplete="off" spellcheck="false" placeholder="sk-…, keychain:name, or op://…">
+          <span class="src" data-src="DEEPSEEK_API_KEY"></span>
+        </div>
+        <div class="row"><button class="btn" id="save-dskey">Save</button><button class="btn" id="test">Test connection</button><span class="msg" id="ds-msg"></span></div>
+        <p class="msg">Enter <span class="mono">keychain:name</span> to read from the macOS Keychain, or a 1Password reference <span class="mono">op://…</span>. Both take effect after a restart; see docs/mac-app.md for details.</p>
+      </details>
+    </template>
+  </section>
+
+  <section class="pane" id="pane-about" data-title="About me">
+    <h2>About me <small>Every bot reads this</small><button class="btn right" id="about-toggle">Edit</button></h2>
+    <div class="card">
+    <div class="mono msg" id="about-path"></div>
+    <div id="about-editor" hidden>
+      <textarea id="about-text" aria-label="About me"></textarea>
+      <div class="row"><button class="btn primary" id="about-save">Save</button><span class="msg" id="about-msg"></span></div>
+    </div>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-baos" data-title="My bots">
+    <h2>My bots <small>Each bot is a folder; its description lives in its AGENTS.md</small></h2>
+    <div class="card">
+    <div class="field" style="margin-bottom: 12px">
+      <label for="DEFAULT_AGENT">Send to by default when unsure</label>
+      <div class="row" style="margin-top: 0">
+        <input type="text" id="DEFAULT_AGENT" placeholder="Kiki (default)" style="max-width: 220px">
+        <button class="btn" id="save-default">Save</button>
+        <span class="msg" id="default-msg"></span>
+      </div>
+      <span class="src" data-src="DEFAULT_AGENT"></span>
+    </div>
+    <div id="baos"></div>
+    <div class="row">
+      <label for="new-bao" class="msg">New</label>
+      <input type="text" id="new-bao" placeholder="Name, e.g. Work bot" style="max-width: 220px">
+      <button class="btn" id="new-bao-go">Create a bot</button>
+      <span class="msg" id="new-msg"></span>
+    </div>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-approval" data-title="Full auto">
+    <h2>Full auto <small>Kiki doesn't ask first; risky actions are caught by the system, logged so they can be undone, and changes take effect immediately</small></h2>
+    <div class="card">
+    <div id="approval" class="msg">Loading…</div>
+    </div>
+    <h3 class="sub">Outbound sending <small>When Kiki sends WeChat messages, emails, or posts to others on your behalf, it sends directly by default</small></h3>
+    <div class="card">
+    <div class="field"><label for="send-allow">Allowlist (names, emails, group names, channels, one per line; only used in the two cases below)</label><textarea id="send-allow" style="min-height: 90px" placeholder="e.g.&#10;Myself&#10;someone@example.com&#10;Family group"></textarea></div>
+    <div class="row"><label for="send-delay" class="msg">Hold for</label><input type="text" id="send-delay" inputmode="numeric" style="max-width: 90px"><span class="msg">seconds (default 0 = send immediately; if set, wait this long first so it can be undone, except for allowlisted recipients)</span></div>
+    <p class="msg">Incoming emails and external agents asking Kiki to send to anyone outside the allowlist are never sent — this prevents phishing.</p>
+    </div>
+    <h3 class="sub">Spending <small>Pay directly within budget; only ask when over</small></h3>
+    <div class="card">
+    <div class="row"><label for="per-tx" class="msg">Per-transaction limit</label><input type="text" id="per-tx" inputmode="decimal" style="max-width: 100px"><label for="monthly" class="msg">Monthly limit</label><input type="text" id="monthly" inputmode="decimal" style="max-width: 100px"><span class="msg" id="spent"></span></div>
+    <div class="row"><button class="btn primary" id="auto-save">Save</button><span class="msg" id="auto-msg"></span></div>
+    </div>
+    <h3 class="sub">What Kiki did <small>Deletions, force-pushes, sends, and spending done automatically; click undo where possible</small></h3>
+    <div class="card">
+    <div id="actions" class="msg">Loading…</div>
+    </div>
+    <h3 class="sub">Always allowed <small>Anything you approved with "always allow this kind / send directly" on a card; delete an entry to restore the default</small></h3>
+    <div class="card">
+    <div id="always" class="msg">Loading…</div>
+    <p class="msg">Reading passwords, writing code, and installing dependencies are always done directly.<span id="ap-msg"></span></p>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-macperm" data-title="Mac permissions">
+    <h2>Mac permissions <small>Grant them all once after setup, and Kiki won't get stuck on system prompts later</small></h2>
+    <div class="card">
+    <div class="row"><button class="btn primary" id="mp-all">Request all at once</button><span class="msg" id="mp-msg">System dialogs will appear one after another; just click "Allow" or "OK" on each</span></div>
+    <div id="macperm" class="msg">Loading…</div>
+    <p class="msg">Permissions are granted to "Kiki Agent" (the part that actually does the work), which is also the name shown in System Settings. Apple requires you to flip the switches yourself; Full Disk Access has no prompt, so "Open" opens the relevant System Settings page and reveals "Kiki Agent" in Finder — drag it into the list, then turn the switch on. All of this happens on the Mac running Kiki (the remote one when connected remotely).</p>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-ext" data-title="Extensions">
+    <h2>Extensions <small>Changes apply to newly opened conversations; already-open conversations need a Kiki restart</small></h2>
+    <h3 class="sub">Built-in Kiki capabilities</h3>
+    <div class="card">
+    <div id="features" class="msg">Loading…</div>
+    </div>
+    <h3 class="sub">pi extensions <small>Installed in the engine folder, independent of any other pi installation on your computer</small></h3>
+    <div class="card">
+<div id="packages" class="msg">Loading…</div>
+    <div class="row">
+      <label for="new-pkg" class="msg">Install</label>
+      <input type="text" id="new-pkg" placeholder="npm:pi-web-access" style="max-width: 280px" spellcheck="false" autocomplete="off">
+      <button class="btn" id="new-pkg-go">Install</button>
+      <span class="msg" id="pkg-msg"></span>
+    </div>
+    <p class="msg">Extensions can run code on your computer, so only install ones you trust. Installing requires npm on your computer (for example, Node installed with Homebrew).</p>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-mcp" data-title="MCP servers">
+    <h2>MCP servers <small>Uses the same tool interface as Claude and Cursor; available in new conversations right away</small></h2>
+    <div class="card">
+    <div id="mcp" class="msg">Loading…</div>
+    <div class="row">
+      <input type="text" id="new-mcp-name" placeholder="Name" style="max-width: 180px" spellcheck="false" autocomplete="off" aria-label="MCP server name">
+      <input type="text" id="new-mcp-spec" placeholder="Command, URL, or JSON" style="max-width: 320px" spellcheck="false" autocomplete="off" aria-label="MCP server command">
+      <button class="btn" id="new-mcp-go">Add</button>
+      <span class="msg" id="mcp-msg"></span>
+    </div>
+    <p class="msg">Common ones are already listed above—just flip the switch. To add others: for a local command, enter one line; for a remote server, enter an https:// URL; or paste the mcpServers JSON from another app. If the command can't be found, enter the full path (in Terminal, <span class="mono">command -v command-name</span> will find it).</p>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-remote" data-title="Remote access">
+    <h2>Remote access</h2>
+    <div class="card">
+      <div id="remote" class="msg">Checking…</div>
+    </div>
+  </section>
+
+</div>
+</main>
+</div>
+
+<script>
+// Overall progress: download is the slowest and accounts for 80%; the remaining 5 steps (verify, self-check, backup, wait for idle, switch) each account for 4%
+const UPD_WEIGHTS = [80, 4, 4, 4, 4, 4];
+function updPercent(st) {
+  if (st.of !== UPD_WEIGHTS.length) return Math.round(((st.n - 1) + (st.percent ?? 0) / 100) / st.of * 100);
+  const done = UPD_WEIGHTS.slice(0, st.n - 1).reduce((a, b) => a + b, 0);
+  return Math.min(100, Math.round(done + (UPD_WEIGHTS[st.n - 1] ?? 0) * (st.percent ?? 0) / 100));
+}
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let S = null;
+
+// Left column categories: each block gets a small colored icon, like System Settings
+const W = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICONS = {
+  look: ["#636366", W('<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="#fff"/>')],
+  model: ["#ff9500", W('<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/>')],
+  providers: ["#5856d6", W('<rect x="4" y="4" width="16" height="6" rx="2"/><rect x="4" y="14" width="16" height="6" rx="2"/><path d="M8 7h.01M8 17h.01"/>')],
+  about: ["#007aff", W('<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>')],
+  baos: ["#af52de", W('<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>')],
+  macperm: ["#8e8e93", W('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>')],
+  approval: ["#ff3b30", W('<path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>')],
+  ext: ["#34c759", W('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>')],
+  mcp: ["#30b0c7", W('<path d="M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0zM12 16v5"/>')],
+  remote: ["#32ade6", W('<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 2.5 2.5 13.5 0 16M12 4c-2.5 2.5-2.5 13.5 0 16"/>')],
+};
+const panes = [...document.querySelectorAll(".pane")];
+$("#nav-items").innerHTML = panes.filter((p) => p.dataset.nav !== "no").map((p) => {
+  const id = p.id.slice(5), [bg, svg] = ICONS[id] || ["#8e8e93", ""];
+  return `<button class="nav-item" data-pane="${id}"><span class="ic" style="background:${bg}">${svg}</span>${esc(p.dataset.title)}</button>`;
+}).join("");
+function showPane(id) {
+  if (!document.getElementById("pane-" + id)) id = "look";
+  for (const p of panes) p.classList.toggle("on", p.id === "pane-" + id);
+  for (const b of document.querySelectorAll(".nav-item")) {
+    const on = b.dataset.pane === id;
+    b.classList.toggle("on", on);
+    if (on) { b.setAttribute("aria-current", "page"); b.scrollIntoView({ block: "nearest", inline: "nearest" }); } else b.removeAttribute("aria-current");
+  }
+  if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
+  $("#ver-btn").classList.toggle("on", id === "update");
+  window.scrollTo(0, 0);
+}
+$("#nav-items").onclick = (e) => { const b = e.target.closest("[data-pane]"); if (b) showPane(b.dataset.pane); };
+// ↑↓ moves between categories
+$("#nav-items").onkeydown = (e) => {
+  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+  const items = [...document.querySelectorAll(".nav-item")], i = items.findIndex((b) => b.classList.contains("on"));
+  const next = items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length];
+  e.preventDefault(); showPane(next.dataset.pane); next.focus();
+};
+window.addEventListener("hashchange", () => showPane(location.hash.slice(1)));
+showPane(location.hash.slice(1) || "look");
+// Bottom-left button: opens update details; when a new version is available it reads "Update to vX"
+$("#ver-btn").onclick = () => {
+  showPane("update");
+  if (!$("#ver-btn").classList.contains("new")) $("#check").click();
+};
+
+// Appearance
+function syncLook() { for (const r of document.querySelectorAll('input[name=theme]')) r.checked = r.value === kikiTheme.get(); }
+for (const r of document.querySelectorAll('input[name=theme]')) r.onchange = () => kikiTheme.set(r.value);
+window.addEventListener("storage", syncLook);
+syncLook();
+// In the chat page's modal: Esc closes the modal
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" || e.defaultPrevented) return;
+  try { if (window.parent !== window && parent.kikiCloseSettings) { e.preventDefault(); parent.kikiCloseSettings(); } } catch {}
+});
+
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || `Something went wrong (${r.status})`);
+  return j;
+}
+function say(id, text, kind = "") { const el = $(id); el.textContent = text; el.className = "msg " + kind; }
+
+const SRC = {
+  file: "Stored in .env",
+  ref: "API key reference; Kiki.app retrieves it from the keychain or 1Password at launch",
+  external: "Injected externally at launch (e.g. op run or Terminal); can't be changed here",
+  unset: "Not set yet",
+};
+
+async function load() {
+  S = await api("/api/settings");
+  $("#about-ver").textContent = `Version ${S.version}`;
+  $("#about-env").textContent = S.envFile;
+  if (!$("#ver").textContent) $("#ver").textContent = `Kiki v${S.version}`;
+  for (const k of ["DEEPSEEK_API_KEY", "DEFAULT_AGENT"]) {
+    const e = S.env[k];
+    const input = $("#" + k);
+    if (!input) continue; // The DeepSeek advanced field only exists when DeepSeek is selected
+    input.value = k === "DEEPSEEK_API_KEY" && e.source !== "ref" ? "" : e.value;
+    if (k === "DEEPSEEK_API_KEY" && e.source !== "ref" && e.value) input.placeholder = `${e.value} (leave blank to keep unchanged)`;
+    input.disabled = e.source === "external";
+    const src = document.querySelector(`[data-src="${k}"]`);
+    src.textContent = SRC[e.source];
+    src.className = "src " + e.source;
+  }
+  $("#auto").checked = S.env.KIKI_AUTO_UPDATE.value !== "0";
+  $("#auto").disabled = S.env.KIKI_AUTO_UPDATE.source === "external";
+  $("#banner").classList.toggle("on", S.changed);
+  $("#restart").hidden = !S.canRestart;
+  if (!S.canRestart) say("#restart-msg", "In development mode, restart from Terminal (npm start).");
+  renderBaos();
+  if (selProv === "deepseek") renderDetail(); // The advanced field needs to show the DeepSeek API key from .env
+}
+
+function renderBaos() {
+  $("#baos").innerHTML = S.agents.map((n) => `
+    <div class="bao-wrap" data-name="${esc(n)}">
+      <div class="bao"><span class="avatar bot">${kikiBot(n)}</span><span class="name">${esc(n)}</span>
+        <button class="btn edit">Edit instructions</button></div>
+      <div class="editor" hidden><textarea aria-label="Instructions for ${esc(n)}"></textarea>
+        <div class="row"><button class="btn primary save">Save</button><span class="msg"></span></div></div>
+    </div>`).join("") || `<p class="msg">No bots yet.</p>`;
+  for (const w of document.querySelectorAll(".bao-wrap")) {
+    const name = w.dataset.name, ed = w.querySelector(".editor"), ta = w.querySelector("textarea"), m = w.querySelector(".editor .msg");
+    w.querySelector(".edit").onclick = async () => {
+      if (!ed.hidden) { ed.hidden = true; return; }
+      try { ta.value = (await api("/api/settings/agent?name=" + encodeURIComponent(name))).text; ed.hidden = false; ta.focus(); }
+      catch (e) { alertMsg(m, e); ed.hidden = false; }
+    };
+    w.querySelector(".save").onclick = async () => {
+      try { await api("/api/settings/agent", { name, text: ta.value }); m.textContent = "Saved; takes effect at the start of the next new conversation"; m.className = "msg ok"; }
+      catch (e) { alertMsg(m, e); }
+    };
+  }
+}
+function alertMsg(el, e) { el.textContent = e.message; el.className = "msg err"; }
+
+async function setEnv(key, value) { const r = await api("/api/settings/env", { key, value }); if (r.changed) $("#banner").classList.add("on"); return r; }
+
+// DeepSeek advanced: DEEPSEEK_API_KEY in .env (can be a keychain / 1Password reference)
+document.addEventListener("click", async (e) => {
+  if (e.target.id === "save-dskey") {
+    try {
+      const key = $("#DEEPSEEK_API_KEY").value.trim();
+      const restart = key && !$("#DEEPSEEK_API_KEY").disabled ? (await setEnv("DEEPSEEK_API_KEY", key)).changed : false;
+      say("#ds-msg", restart ? "Saved; takes effect after restart" : "Saved; ready to use now", "ok");
+      await load(); provCall("/api/models/providers");
+    } catch (err) { say("#ds-msg", err.message, "err"); }
+  } else if (e.target.id === "test") {
+    say("#ds-msg", "Testing…");
+    try { const r = await api("/api/settings/test", {}); r.ok ? say("#ds-msg", "Connection OK", "ok") : say("#ds-msg", r.error, "err"); }
+    catch (err) { say("#ds-msg", err.message, "err"); }
+  } else if (e.target.dataset?.goto) showPane(e.target.dataset.goto);
+});
+$("#save-default").onclick = async () => {
+  try { await setEnv("DEFAULT_AGENT", $("#DEFAULT_AGENT").value); say("#default-msg", "Saved; takes effect after restart", "ok"); await load(); }
+  catch (e) { say("#default-msg", e.message, "err"); }
+};
+$("#auto").onchange = async () => {
+  try { await setEnv("KIKI_AUTO_UPDATE", $("#auto").checked ? "" : "0"); }
+  catch (e) { say("#upd", e.message, "err"); }
+};
+
+$("#about-toggle").onclick = async () => {
+  const ed = $("#about-editor");
+  if (!ed.hidden) { ed.hidden = true; $("#about-toggle").textContent = "Edit"; return; }
+  try {
+    const r = await api("/api/settings/about");
+    $("#about-path").textContent = r.path; $("#about-text").value = r.text;
+    ed.hidden = false; $("#about-toggle").textContent = "Collapse"; $("#about-text").focus();
+  } catch (e) { say("#about-msg", e.message, "err"); }
+};
+$("#about-save").onclick = async () => {
+  try { await api("/api/settings/about", { text: $("#about-text").value }); say("#about-msg", "Saved; takes effect at the start of the next new conversation", "ok"); }
+  catch (e) { say("#about-msg", e.message, "err"); }
+};
+
+$("#new-bao-go").onclick = async () => {
+  const name = $("#new-bao").value.trim();
+  try { await api("/api/settings/agent", { name, create: true }); $("#new-bao").value = ""; say("#new-msg", `Created ${name}; you'll see it back on the chat page`, "ok"); await load(); }
+  catch (e) { say("#new-msg", e.message, "err"); }
+};
+
+$("#restart").onclick = async () => {
+  try {
+    await api("/api/settings/restart", {});
+    say("#restart-msg", "Restarting…");
+    const t0 = Date.now();
+    const poll = async () => {
+      try { await api("/api/health"); if (Date.now() - t0 > 1500) return location.reload(); } catch {}
+      if (Date.now() - t0 < 60000) setTimeout(poll, 1000); else say("#restart-msg", "Not up after a minute; check the logs in ~/Library/Logs/Kiki/", "err");
+    };
+    setTimeout(poll, 1500);
+  } catch (e) { say("#restart-msg", e.message, "err"); }
+};
+
+async function loadRemote() {
+  const r = await api("/api/settings/remote").catch(() => null);
+  const el = $("#remote");
+if (!r || !r.installed) { el.innerHTML = "Tailscale not detected. Once it's installed and you're signed in, run <span class=\"mono\">tailscale serve --bg 4567</span> to use it on your phone."; return; }
+  if (!r.online) { el.innerHTML = `<span class="dot"></span>Tailscale not connected`; return; }
+  el.innerHTML = `<div><span class="dot ok"></span>Tailscale connected</div>` +
+    (r.serving && r.url ? `<div class="mono"><a href="${esc(r.url)}" target="_blank">${esc(r.url)}</a></div><div>Open this address on your phone and add it to your home screen.</div>`
+      : `<div>Not yet available on your phone. Run <span class="mono">tailscale serve --bg 4567</span></div>`);
+}
+
+let updTimer = null;
+async function loadUpdate() {
+  const u = await api("/api/update").catch(() => null);
+  const el = $("#upd");
+  clearTimeout(updTimer);
+  if (!u) {
+    // Kiki restarts for a few seconds during an update switch; if it can't connect, check again shortly
+    if (window.__updating) { el.textContent = "Kiki is restarting, almost there…"; $("#upd-prog").hidden = false; $("#upd-prog progress").value = 95; updTimer = setTimeout(loadUpdate, 2000); return; }
+    el.textContent = "Update feature unavailable"; return;
+  }
+  if (window.__updating && window.__updating !== u.current) { location.reload(); return; } // new version is up
+  let t = `Current v${esc(u.current)}`;
+  const busy = ["checking", "downloading", "installing"].includes(u.status);
+  if (u.status === "available") t += `, new version v${esc(u.latest)} available`;
+  else if (u.status === "error") t += `, ${esc(u.message || "check failed")}`;
+  else if (busy) t += `, ${esc(u.message || "working…")}`;
+  else if (u.checkedAt) t += ", up to date";
+  if (!u.canApply) t += "<br>In dev mode, update with git pull";
+  el.innerHTML = t;
+  $("#ver").textContent = `Kiki v${u.current}`;
+  const vb = $("#ver-btn"), avail = u.status === "available";
+  vb.classList.toggle("new", avail);
+  vb.textContent = avail ? `Update to v${u.latest}` : busy ? "Updating…" : "Check for updates";
+  $("#apply").hidden = !(u.status === "available" && u.canApply);
+  // Progress bar: 6 steps (download, verify, self-check, backup, wait for conversations, switch); the download step shows a byte-based percentage
+  const st = (u.status === "downloading" || u.status === "installing") && u.step;
+  $("#upd-prog").hidden = !st;
+  if (st) {
+    const overall = updPercent(st);
+    $("#upd-prog progress").value = overall;
+    $("#upd-step").textContent = `Step ${st.n}/${st.of}: ${st.label}${st.percent !== undefined && st.n === 1 ? ` · ${st.percent}%` : ""}`;
+  }
+  renderUpdDetails(u);
+  if (busy) {
+    if (u.status !== "checking") window.__updating = u.current;
+    updTimer = setTimeout(loadUpdate, 2000); // downloading or installing: refresh progress every 2 seconds
+  }
+}
+// Details: version, release notes, last result, per-step log (lay out the process just like Hermes)
+async function renderUpdDetails(u) {
+  const rows = [`Current version: v${esc(u.current)}`];
+  if (u.latest && u.latest !== u.current) rows.push(`Latest version: v${esc(u.latest)}${u.url ? ` · <a href="${esc(u.url)}" target="_blank" rel="noopener">Release page</a>` : ""}`);
+  if (u.checkedAt) rows.push(`Last checked: ${new Date(u.checkedAt).toLocaleString()}`);
+  if (u.last) {
+    const r = { ok: "succeeded", rolled_back: "failed, rolled back", failed: "failed" }[u.last.result] || u.last.result;
+    rows.push(`Last update: v${esc(u.last.from)} → v${esc(u.last.to)}, ${esc(r)} (${new Date(u.last.at).toLocaleString()})`);
+  }
+  rows.push(`Auto-update: ${u.auto ? "on (checks hourly, installs automatically when idle)" : "off"}`);
+  $("#upd-info").innerHTML = rows.join("<br>");
+  $("#upd-notes").textContent = u.notes || "(no notes)";
+  if (!$("#upd-details").open) return;
+  const l = await api("/api/update/log").catch(() => null);
+  const box = $("#upd-log");
+  box.textContent = l && l.lines.length ? l.lines.join("\n") : "(no records yet)";
+  box.scrollTop = box.scrollHeight;
+}
+$("#upd-details").addEventListener("toggle", () => { if ($("#upd-details").open) loadUpdate(); });
+$("#check").onclick = async () => { $("#upd").textContent = "Checking…"; await api("/api/update/check", {}).catch(() => {}); loadUpdate(); };
+$("#apply").onclick = async () => {
+  $("#apply").hidden = true;
+  // The endpoint only returns after download and self-check finish, so start polling progress first instead of waiting idle
+  const req = api("/api/update/apply", {});
+  updTimer = setTimeout(loadUpdate, 500);
+  try { const u = await req; window.__updating = u.current; loadUpdate(); }
+  catch (e) { clearTimeout(updTimer); say("#upd", e.message, "err"); }
+};
+
+load().catch((e) => document.body.insertAdjacentHTML("afterbegin", `<p class="msg err" style="padding:16px">${esc(e.message)}</p>`));
+loadRemote();
+loadUpdate();
+
+async function loadExtensions() {
+  let r;
+  try { r = await api("/api/settings/extensions"); } catch (e) { $("#features").textContent = e.message; return; }
+  const sw = (on, label) => `<label class="switch"><input type="checkbox" ${on ? "checked" : ""} aria-label="${esc(label)}"><i></i></label>`;
+  $("#features").className = "";
+  $("#features").innerHTML = r.features.map((f) => `
+    <div class="toggle-row" data-id="${esc(f.id)}"><div class="t"><b>${esc(f.name)}</b><span>${esc(f.desc)}</span></div>${sw(f.on, f.name)}</div>`).join("");
+  for (const row of document.querySelectorAll("#features .toggle-row")) {
+    const input = row.querySelector("input");
+    input.onchange = async () => {
+      try { await api("/api/settings/features", { id: row.dataset.id, on: input.checked }); }
+      catch (e) { input.checked = !input.checked; say("#pkg-msg", e.message, "err"); }
+    };
+  }
+  const box = $("#packages");
+  if (r.error) { box.textContent = r.error; box.className = "msg err"; return; }
+  box.className = "";
+  box.innerHTML = r.packages.length ? r.packages.map((p) => `
+    <div class="toggle-row" data-src="${esc(p.source)}"><div class="t"><b>${esc(p.name)}</b><span class="mono">${esc(p.source)}</span></div>
+      <button class="btn rm">Uninstall</button>${sw(p.on, p.name)}</div>`).join("")
+    : `<p class="msg">No extensions installed yet. Recommended: <span class="mono">npm:pi-web-access</span> (web search, read web pages).</p>`;
+  for (const row of document.querySelectorAll("#packages .toggle-row")) {
+    const source = row.dataset.src, input = row.querySelector("input");
+    input.onchange = async () => {
+      try { await api("/api/settings/extensions/toggle", { source, on: input.checked }); }
+      catch (e) { input.checked = !input.checked; say("#pkg-msg", e.message, "err"); }
+    };
+    row.querySelector(".rm").onclick = async () => {
+      if (!confirm(`Uninstall ${source}?`)) return;
+      say("#pkg-msg", "Uninstalling…");
+      try { await api("/api/settings/extensions/remove", { source }); say("#pkg-msg", "Uninstalled", "ok"); loadExtensions(); }
+      catch (e) { say("#pkg-msg", e.message, "err"); }
+    };
+  }
+}
+$("#new-pkg-go").onclick = async () => {
+  const source = $("#new-pkg").value.trim();
+  say("#pkg-msg", "Installing, this may take a minute or two…");
+  $("#new-pkg-go").disabled = true;
+  try { await api("/api/settings/extensions/install", { source }); $("#new-pkg").value = ""; say("#pkg-msg", "Installed. Available after you start a new conversation or restart Kiki", "ok"); loadExtensions(); }
+  catch (e) { say("#pkg-msg", e.message, "err"); }
+  finally { $("#new-pkg-go").disabled = false; }
+};
+loadExtensions();
+
+const MODES = [["allow", "Just do it (with fallback)"], ["ask", "Ask first"], ["deny", "Don't do it"]];
+const AUTO_DESC = { delete: "Backs up automatically before deleting, can be undone", force: "Saves a copy of the remote branch before pushing, can be undone", send: "Sends directly", spend: "Pays directly within budget, asks only when over" };
+async function loadApproval() {
+  let r;
+  try { r = await api("/api/settings/approval"); } catch (e) { $("#approval").textContent = e.message; return; }
+  $("#approval").className = "";
+  $("#approval").innerHTML = r.categories.map((c) => `
+    <div class="toggle-row" data-id="${esc(c.id)}"><div class="t"><b>${esc(c.name)}</b><span>${esc(c.mode === "allow" ? AUTO_DESC[c.id] : c.desc)}</span></div>
+      <select aria-label="${esc(c.name)}">${MODES.map(([v, l]) => `<option value="${v}" ${c.mode === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>`).join("");
+  for (const row of document.querySelectorAll("#approval .toggle-row")) {
+    const sel = row.querySelector("select");
+    sel.onchange = async () => {
+      try { await api("/api/settings/approval/mode", { category: row.dataset.id, mode: sel.value }); say("#ap-msg", "Saved", "ok"); loadApproval(); }
+      catch (e) { say("#ap-msg", e.message, "err"); loadApproval(); }
+    };
+  }
+  $("#send-allow").value = r.sendAllow.join("\n");
+  $("#send-delay").value = r.sendDelaySec;
+  $("#per-tx").value = r.budget.perTx;
+  $("#monthly").value = r.budget.monthly;
+  $("#spent").textContent = `Auto-spent this month: ${r.spent.total}`;
+  const box = $("#always");
+  box.className = r.always.length ? "" : "msg";
+  box.innerHTML = r.always.length ? r.always.map((a) => `
+    <div class="toggle-row" data-key="${esc(a.key)}"><div class="t"><span>${esc(a.label)}</span></div><button class="btn rm">Remove</button></div>`).join("")
+    : "None yet.";
+  for (const row of document.querySelectorAll("#always .toggle-row")) {
+    row.querySelector(".rm").onclick = async () => {
+      try { await api("/api/settings/approval/forget", { key: row.dataset.key }); loadApproval(); }
+      catch (e) { say("#ap-msg", e.message, "err"); }
+    };
+  }
+  loadActions();
+}
+$("#auto-save").onclick = async () => {
+  try {
+    await api("/api/settings/approval/auto", { sendAllow: $("#send-allow").value, sendDelaySec: $("#send-delay").value, perTx: $("#per-tx").value, monthly: $("#monthly").value });
+    say("#auto-msg", "Saved", "ok");
+  } catch (e) { say("#auto-msg", e.message, "err"); }
+};
+async function loadActions() {
+  let list;
+  try { list = await api("/api/actions?limit=30"); } catch (e) { $("#actions").textContent = e.message; return; }
+  const box = $("#actions");
+  box.className = list.length ? "" : "msg";
+  box.innerHTML = list.length ? list.map((a) => `
+    <div class="toggle-row" data-id="${esc(a.id)}"><div class="t"><b>${esc(a.categoryName)} · ${esc(new Date(a.time).toLocaleString())}</b><span title="${esc(a.detail)}">${esc(a.note)}${a.undoNote ? ` · Undo: ${esc(a.undoNote)}` : ""}</span></div>
+      ${a.undone ? '<span class="msg">Undone</span>' : a.undo ? '<button class="btn undo">Undo</button>' : '<span class="msg">Can\'t undo</span>'}</div>`).join("")
+    : "None yet. Anything Kiki deletes, pushes, sends, or spends automatically is recorded here.";
+  for (const row of document.querySelectorAll("#actions .toggle-row")) {
+    const b = row.querySelector(".undo");
+    if (b) b.onclick = async () => {
+      b.disabled = true;
+      try { const r = await api("/api/actions/undo", { id: row.dataset.id }); say("#ap-msg", r.note || "Undone", "ok"); }
+      catch (e) { say("#ap-msg", e.message, "err"); }
+      loadActions();
+    };
+  }
+}
+let mpTimer = 0;
+async function loadMacPerm() {
+  let r;
+  try { r = await api("/api/settings/mac-permissions"); } catch (e) { $("#macperm").textContent = e.message; return; }
+  const box = $("#macperm");
+  if (!r.mac) { box.textContent = "Kiki isn't running on a Mac right now, so these settings aren't needed."; $("#mp-all").hidden = true; return; }
+  if (!r.asked) api("/api/settings/mac-permissions/seen", {}).catch(() => {});
+  box.className = "";
+  const ST = { on: '<span class="msg ok">On</span>', off: '<span class="msg err">Off</span>', unknown: "" };
+  box.innerHTML = r.items.map((p) => `
+    <div class="toggle-row" data-id="${esc(p.id)}"><div class="t"><b>${esc(p.name)}</b><span>${esc(p.why)}</span></div>
+      ${ST[p.status] || ""}<button class="btn mp-open">Open settings</button></div>`).join("");
+  for (const row of document.querySelectorAll("#macperm .toggle-row"))
+    row.querySelector(".mp-open").onclick = () => api("/api/settings/mac-permissions/open", { id: row.dataset.id }).catch((e) => say("#mp-msg", e.message, "err"));
+  $("#mp-all").disabled = r.requesting;
+  if (r.requesting) say("#mp-msg", `Requesting: ${r.step}… (watch for the system dialog on screen)`);
+  else if (mpTimer) say("#mp-msg", r.items.every((p) => p.status !== "off") ? "All done. For Full Disk Access, remember to flip the switch in the settings page that opened." : "A few are still off. Click \"Open settings\" next to them and turn them on.", "ok");
+  clearTimeout(mpTimer);
+  mpTimer = r.requesting ? setTimeout(loadMacPerm, 1500) : 0;
+}
+$("#mp-all").onclick = async () => {
+  try { await api("/api/settings/mac-permissions/request", {}); mpTimer = 1; setTimeout(loadMacPerm, 500); }
+  catch (e) { say("#mp-msg", e.message, "err"); }
+};
+loadMacPerm();
+loadApproval();
+
+async function loadMcp() {
+  const box = $("#mcp");
+  let r;
+  try { r = await api("/api/settings/mcp"); } catch (e) { box.textContent = e.message; box.className = "msg err"; return; }
+  if (r.error) { box.textContent = r.error; box.className = "msg err"; return; }
+  box.className = "";
+  box.innerHTML = r.servers.length ? r.servers.map((s) => `
+    <div class="toggle-row" data-name="${esc(s.name)}"><div class="t"><b>${esc(s.name)}</b>${s.desc ? `<span>${esc(s.desc)}</span><br>` : ""}<span class="mono">${esc(s.summary)}</span>
+      ${s.preset && !s.installed ? `<br><span>Install it in Terminal first: <span class="mono">${esc(s.install)}</span></span>` : ""}</div>
+      ${s.preset ? "" : `<button class="btn rm">Delete</button>`}<label class="switch"><input type="checkbox" ${s.on ? "checked" : ""} aria-label="${esc(s.name)}"><i></i></label></div>`).join("")
+    : `<p class="msg">No MCP servers yet.</p>`;
+  for (const row of document.querySelectorAll("#mcp .toggle-row")) {
+    const name = row.dataset.name, input = row.querySelector("input");
+    input.onchange = async () => {
+      try { await api("/api/settings/mcp/toggle", { name, on: input.checked }); say("#mcp-msg", "Takes effect in new conversations", "ok"); loadMcp(); }
+      catch (e) { input.checked = !input.checked; say("#mcp-msg", e.message, "err"); }
+    };
+    const rm = row.querySelector(".rm");
+    if (rm) rm.onclick = async () => {
+      if (!confirm(`Delete MCP server ${name}?`)) return;
+      try { await api("/api/settings/mcp/remove", { name }); say("#mcp-msg", "Deleted", "ok"); loadMcp(); }
+      catch (e) { say("#mcp-msg", e.message, "err"); }
+    };
+  }
+}
+$("#new-mcp-go").onclick = async () => {
+  try {
+    const r = await api("/api/settings/mcp/add", { name: $("#new-mcp-name").value, spec: $("#new-mcp-spec").value });
+    $("#new-mcp-name").value = ""; $("#new-mcp-spec").value = "";
+    say("#mcp-msg", `Added ${r.name} — available in new conversations`, "ok"); loadMcp();
+  } catch (e) { say("#mcp-msg", e.message, "err"); }
+};
+loadMcp();
+
+// "Models" page: main model + per-purpose models (src/modelroles.ts: routing, summaries, quick ack, vision); the dropdowns only list models checked on the Providers page
+const optLabel = (m) => (m.providerName ? m.providerName + " · " : "") + m.name;
+function modelOptions(models, sel, filter = () => true) {
+  const groups = new Map();
+  for (const m of models.filter(filter)) groups.set(m.providerName || m.provider, [...(groups.get(m.providerName || m.provider) || []), m]);
+  return [...groups].map(([g, ms]) => `<optgroup label="${esc(g)}">${ms.map((m) => `<option value="${esc(m.spec)}"${m.spec === sel ? " selected" : ""}>${esc(m.name)}${m.image ? " (vision)" : ""}</option>`).join("")}</optgroup>`).join("");
+}
+async function loadModels(change) {
+  let j, info;
+  try {
+    if (change?.main) await api("/api/models/use", { spec: change.main });
+    j = await api("/api/models/roles", change?.role);
+    info = await api("/api/models");
+    if (change) say("#roles-msg", "Saved, effective immediately", "ok");
+  } catch (e) { say("#roles-msg", e.message, "err"); if (!j) return; }
+  const models = j.models, cur = info?.current || "";
+  // The menu always includes the current model (even if not signed in), so "is anything usable" depends on whether a provider is connected
+  try { $("#no-models").hidden = (await api("/api/models/providers")).providers.some((p) => p.configured && p.on); } catch {}
+  $("#main-model").innerHTML = (models.some((m) => m.spec === cur) ? "" : `<option value="${esc(cur)}" selected>${esc(cur || "Not selected")}${cur ? " (unavailable)" : ""}</option>`) + modelOptions(models, cur);
+  $("#roles").innerHTML = j.roles.map((x) => {
+    const unset = x.unset.replace("default model", "main model");
+    const bad = x.spec && !models.some((m) => m.spec === x.spec);
+    return `<div class="mrole"><div class="t"><b>${esc(x.name)}</b><span>${esc(x.desc)}</span></div>
+      <select data-role="${x.id}" aria-label="${esc(x.name)}" class="${x.spec ? "" : "follow"}"><option value="">${esc(unset)}</option>${modelOptions(models, x.spec, x.id === "vision" ? (m) => m.image : undefined)}${bad ? `<option value="${esc(x.spec)}" selected>${esc(x.spec)} (unavailable)</option>` : ""}</select></div>`;
+  }).join("");
+}
+$("#main-model").onchange = (e) => loadModels({ main: e.target.value });
+$("#roles").addEventListener("change", (e) => { const t = e.target.closest("[data-role]"); if (t) loadModels({ role: { id: t.dataset.role, spec: t.value } }); });
+loadModels();
+
+// "Providers" page: list on the left (connected / common / more), connection method and models for that provider on the right. Everything goes through Kiki Engine's own login flow; credentials are stored in engine/auth.json
+const COMMON = ["anthropic", "openai", "google", "xai", "deepseek", "openrouter", "moonshotai", "kimi-coding", "qwen-token-plan", "zai", "minimax", "github-copilot"];
+let provs = [], plogin = { status: "idle" }, provPoll = null, selProv = null, moreOpen = false;
+const provModels = {}; // provider → its models (for checking)
+const provMq = {}; // provider → model search term
+async function provCall(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : undefined);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { plogin = { ...plogin, error: j.error || "Something went wrong" }; renderProvs(); return null; }
+  const wasWaiting = plogin.status === "waiting";
+  provs = j.providers; plogin = j.login;
+  if (wasWaiting && plogin.status === "done" && plogin.provider) { loadProvModels(plogin.provider); loadModels(); } // once configured, let you check models right away
+  if (!selProv || !provs.some((p) => p.id === selProv)) selProv = (provs.find((p) => p.configured) || provs.find((p) => p.id === "deepseek") || provs[0])?.id;
+  const sp = provs.find((p) => p.id === selProv);
+  if (sp?.configured && !provModels[sp.id]) loadProvModels(sp.id);
+  renderProvs();
+  clearInterval(provPoll);
+  if (plogin.status === "waiting") provPoll = setInterval(() => provCall("/api/models/providers"), 2000); // wait for the browser side to finish signing in
+  return j;
+}
+async function loadProvModels(id) {
+  const r = await fetch(`/api/models/provider?id=${encodeURIComponent(id)}`);
+  if (r.ok) provModels[id] = (await r.json()).models;
+  renderProvs();
+}
+function logo(p) {
+  let h = 0;
+  for (const c of p.id) h = (h * 31 + c.charCodeAt(0)) % 360;
+  return `<span class="lg" style="background:hsl(${h} 45% 52%)">${esc(p.name[0].toUpperCase())}</span>`;
+}
+function provItem(p) {
+  return `<button class="pv-it${p.id === selProv ? " on" : ""}" data-sel="${p.id}">${logo(p)}<span class="n">${esc(p.name)}</span>${p.configured ? `<span class="dot${p.on ? " ok" : ""}" title="${p.on ? "Connected" : "Connected, but hidden from the menu"}"></span>` : ""}</button>`;
+}
+function renderList() {
+  const q = $("#prov-q").value.trim().toLowerCase();
+  if (q) {
+    const hit = provs.filter((p) => (p.name + " " + p.id + " " + (p.oauth || "")).toLowerCase().includes(q));
+    $("#prov-list").innerHTML = hit.map(provItem).join("") || '<div class="pv-g">Not found</div>';
+    return;
+  }
+  const conn = provs.filter((p) => p.configured);
+  const common = COMMON.map((id) => provs.find((p) => p.id === id)).filter((p) => p && !p.configured);
+  const rest = provs.filter((p) => !p.configured && !COMMON.includes(p.id));
+  $("#prov-list").innerHTML =
+    (conn.length ? `<div class="pv-g">Connected</div>${conn.map(provItem).join("")}` : "") +
+    `<div class="pv-g">Common</div>${common.map(provItem).join("")}` +
+    `<button class="pv-g" data-more>More (${rest.length})${moreOpen ? "▾" : "▸"}</button>${moreOpen ? rest.map(provItem).join("") : ""}`;
+}
+function flowHtml(p) {
+  const L = plogin;
+  if (L.provider !== p.id) return "";
+  if (L.status === "done") return `<div class="flow">${L.type === "oauth" ? "Signed in" : "API key saved"} — check the models you want to use below.</div>`;
+  if (L.status === "error") return `<div class="flow err">Didn't work: ${esc(L.error || "")}</div>`;
+  if (L.status !== "waiting") return L.error ? `<div class="flow err">${esc(L.error)}</div>` : "";
+  let h = "";
+  if (L.url) h += `<div>1. <a href="${esc(L.url)}" target="_blank" rel="noopener">Open the sign-in page</a>, sign in and approve.<br>2. If you sign in on the Mac mini it connects automatically; if you sign in on another computer and the final page won't open, paste the full URL from its address bar below.</div>`;
+  if (L.deviceCode) h += `<div>Open <a href="${esc(L.deviceCode.verificationUri)}" target="_blank" rel="noopener">${esc(L.deviceCode.verificationUri)}</a> and enter the code <code>${esc(L.deviceCode.userCode)}</code></div>`;
+  const q = L.prompt;
+  if (q && q.type === "select") h += `<div>${esc(q.message)}</div><div class="row">${q.options.map((o) => `<button class="btn" data-answer="${esc(o.id)}" title="${esc(o.description || "")}">${esc(o.label)}</button>`).join("")}</div>`;
+  else if (q) {
+    const msg = q.type === "secret" && /^Enter /.test(q.message) ? `Enter your ${p.name} API key` : q.message;
+    h += `<div>${esc(msg)}</div><div class="row"><input id="prov-answer" type="${q.type === "secret" ? "password" : "text"}" autocomplete="off" spellcheck="false" placeholder="${esc(q.placeholder || "")}"><button class="btn primary" data-answer="">OK</button></div>`;
+  }
+  if (L.progress && !q) h += `<div class="st">${esc(L.progress)}</div>`;
+  if (L.error) h += `<div class="err">${esc(L.error)}</div>`;
+  return `<div class="flow">${h || "One moment…"}<div class="row"><button class="btn" data-cancel>Cancel</button></div></div>`;
+}
+function modelsHtml(p) {
+  const ms = provModels[p.id];
+  if (!ms) return '<div class="msg">Loading models…</div>';
+  const q = (provMq[p.id] || "").toLowerCase();
+  const shown = ms.filter((m) => !q || (m.name + " " + m.spec).toLowerCase().includes(q));
+  return (ms.length > 12 ? `<input type="text" class="mq" data-mq="${p.id}" placeholder="Search this provider's ${ms.length} models" value="${esc(provMq[p.id] || "")}">` : "") +
+    `<div class="mlist">${shown.map((m) => `<label class="mrow"><span class="nm">${esc(m.name)}${m.image ? '<span class="mt">Vision</span>' : ""}</span><span class="switch"><input type="checkbox" data-pick="${esc(m.spec)}" data-p="${p.id}"${m.checked ? " checked" : ""} aria-label="${esc(m.name)}"><i></i></span></label>`).join("") || '<span class="msg">Not found</span>'}</div>`;
+}
+function renderDetail() {
+  const p = provs.find((x) => x.id === selProv);
+  if (!p) { $("#prov-detail").innerHTML = '<div class="pv-empty">Pick a provider on the left</div>'; return; }
+  const how = p.oauthActive ? "subscription sign-in" : p.source === "stored" ? "API key" : p.source ? "from " + esc(p.source) : "";
+  const tag = p.configured ? `<span class="tag ok">Connected${how ? " · " + how : ""}</span>` : '<span class="tag">Not connected</span>';
+  const busy = plogin.provider === p.id && plogin.status === "waiting";
+  const acct = `<div class="acct">` + [
+    p.oauth ? `<button class="btn${p.configured ? "" : " primary"}" data-login="oauth" data-p="${p.id}"${busy ? " disabled" : ""}>${p.oauthActive ? "Sign in again" : "Sign in with subscription"} (${esc(p.oauth)})</button>` : "",
+    p.apiKey ? `<button class="btn${p.configured || p.oauth ? "" : " primary"}" data-login="api_key" data-p="${p.id}"${busy ? " disabled" : ""}>${p.configured && !p.oauthActive ? "Change API key" : "Enter API key"}</button>` : "",
+    p.oauthActive || p.source === "stored" ? `<button class="btn" data-logout="${p.id}">${p.oauthActive ? "Sign out" : "Delete API key"}</button>` : "",
+  ].join("") + `</div>`;
+  const flow = plogin.provider === p.id && plogin.status !== "idle" ? flowHtml(p) : plogin.error && !plogin.provider ? `<div class="flow err">${esc(plogin.error)}</div>` : "";
+  let models = "";
+  if (p.configured) {
+    const ms = provModels[p.id], n = ms ? ms.filter((m) => m.checked).length : 0;
+    models = `<div class="lbl">Models${ms ? ` (${n} of ${ms.length} checked)` : ""}<span class="show">Show in menu<label class="switch" title="Turn off: this provider no longer appears in the model menu or on the Models page; credentials are kept"><input type="checkbox" data-toggle="${p.id}"${p.on ? " checked" : ""} aria-label="Show ${esc(p.name)} in menu"><i></i></label></span></div>` +
+      (p.on ? modelsHtml(p) : '<div class="msg">Hidden: this provider\'s models won\'t appear in the menu; credentials are kept.</div>');
+  }
+  const keep = $("#prov-answer"), val = keep?.value, focused = keep && document.activeElement === keep; // don't lose what's being typed on the 2-second refresh
+  const af = document.activeElement?.dataset?.mq, afPos = af ? document.activeElement.selectionStart : 0;
+  const advOpen = $("#ds-adv-box")?.open, dsVal = $("#DEEPSEEK_API_KEY")?.value;
+  $("#prov-detail").innerHTML = `<h3>${esc(p.name)} ${tag}</h3><div class="lbl">Connection method</div>${acct}${flow}${models}`;
+  if (p.id === "deepseek") { // DeepSeek can also use the key in .env (Keychain / 1Password reference)
+    $("#prov-detail").append($("#ds-adv").content.cloneNode(true));
+    $("#ds-adv-box").open = !!advOpen;
+    if (S) {
+      const e = S.env.DEEPSEEK_API_KEY, input = $("#DEEPSEEK_API_KEY"), src = document.querySelector('[data-src="DEEPSEEK_API_KEY"]');
+      input.value = dsVal ?? (e.source === "ref" ? e.value : "");
+      if (e.source !== "ref" && e.value) input.placeholder = `${e.value} (leave blank to keep unchanged)`;
+      input.disabled = e.source === "external";
+      src.textContent = SRC[e.source]; src.className = "src " + e.source;
+    }
+  }
+  const now = $("#prov-answer");
+  if (now && val) now.value = val;
+  if (now && (focused || !val)) now.focus();
+  if (af) { const el = document.querySelector(`[data-mq="${af}"]`); if (el) { el.focus(); el.setSelectionRange(afPos, afPos); } }
+}
+function renderProvs() { renderList(); renderDetail(); }
+$("#prov-q").oninput = renderList;
+$("#prov-list").addEventListener("click", (e) => {
+  if (e.target.closest("[data-more]")) { moreOpen = !moreOpen; renderList(); return; }
+  const b = e.target.closest("[data-sel]");
+  if (!b) return;
+  selProv = b.dataset.sel;
+  const p = provs.find((x) => x.id === selProv);
+  if (p.configured && !provModels[p.id]) loadProvModels(p.id);
+  renderProvs();
+});
+$("#prov-detail").addEventListener("change", async (e) => {
+  const t = e.target;
+  if (t.dataset.toggle) { await provCall("/api/models/prefs", { provider: t.dataset.toggle, on: t.checked }); loadModels(); return; }
+  if (t.dataset.pick) {
+    const id = t.dataset.p, ms = provModels[id];
+    ms.find((x) => x.spec === t.dataset.pick).checked = t.checked;
+    await provCall("/api/models/prefs", { provider: id, models: ms.filter((x) => x.checked).map((x) => x.spec.slice(id.length + 1)) });
+    loadModels();
+  }
+});
+$("#prov-detail").addEventListener("input", (e) => { const id = e.target.dataset.mq; if (id) { provMq[id] = e.target.value; renderDetail(); } });
+async function startLogin(id, type) {
+  await provCall("/api/models/prefs", { provider: id, on: true }); // once logged in, it's simply on
+  const j = await provCall("/api/models/login/start", { provider: id, type });
+  if (j?.login?.url) window.open(j.login.url, "_blank", "noopener");
+}
+$("#prov-detail").addEventListener("click", async (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.login) startLogin(b.dataset.p, b.dataset.login);
+  else if (b.dataset.answer !== undefined) {
+    const v = b.dataset.answer || $("#prov-answer")?.value.trim();
+    if (v) provCall("/api/models/login/answer", { value: v });
+  } else if ("cancel" in b.dataset) { provCall("/api/models/login/cancel", {}); }
+  else if (b.dataset.logout) { await provCall("/api/models/login/logout", { provider: b.dataset.logout }); loadModels(); }
+});
+$("#prov-detail").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "prov-answer") { e.preventDefault(); $("#prov-detail [data-answer='']")?.click(); } });
+provCall("/api/models/providers");
+</script>
+</body>
+</html>

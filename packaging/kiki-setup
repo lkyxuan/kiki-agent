@@ -1,0 +1,60 @@
+#!/bin/bash
+# Runs first every time Kiki.app opens (lives in Contents/Resources/):
+#   1. Registers the background service with launchd (starts automatically at boot/login, restarts if it crashes); skipped if already registered
+#   2. Waits for the service to come up, then prints the port number on the last line; with --open, opens it in the browser instead (fallback when there's no native window)
+# The real work is done by kiki-server (run by launchd); this script exits within seconds.
+APP="$(cd "$(dirname "$0")/../.." && pwd)"
+LABEL=com.lkyxuan.kiki.en
+DOMAIN="gui/$(id -u)"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+LOGDIR="$HOME/Library/Logs/Kiki"
+DATA_DIR="${DATA_DIR:-$HOME/Kiki}"
+PORT=$(sed -n 's/^PORT=//p' "$DATA_DIR/.env" 2>/dev/null | tr -d '"'"'"' ' | tail -1)
+PORT="${PORT:-4567}"
+mkdir -p "$LOGDIR" "$HOME/Library/LaunchAgents"
+
+want=$(cat <<PL
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$LABEL</string>
+  <key>ProgramArguments</key><array><string>$APP/Contents/MacOS/kiki-server</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>AbandonProcessGroup</key><true/>
+  <key>ProcessType</key><string>Interactive</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StandardOutPath</key><string>$LOGDIR/server.log</string>
+  <key>StandardErrorPath</key><string>$LOGDIR/server.log</string>
+</dict>
+</plist>
+PL
+)
+
+# Register the service; a just-unregistered service needs a moment before it can be registered again, so retry a few times
+register() {
+  for _ in $(seq 1 10); do
+    launchctl bootstrap "$DOMAIN" "$PLIST" 2>/dev/null && return 0
+    launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1 && return 0
+    sleep 0.5
+  done
+}
+if [ "$(cat "$PLIST" 2>/dev/null)" != "$want" ]; then
+  # First install, or the app moved: re-register
+  launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null
+  printf '%s\n' "$want" > "$PLIST"
+  register
+elif ! launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
+  register
+fi
+
+for _ in $(seq 1 40); do
+  curl -fsS --max-time 1 "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1 && break
+  sleep 0.5
+done
+if [ "${1:-}" = "--open" ]; then open "http://localhost:$PORT"; else echo "$PORT"; fi

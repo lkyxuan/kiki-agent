@@ -1,0 +1,39 @@
+# Delayed open source: every quarter, push the version of the private repo from three months ago to the public lkyxuan/kiki (main fast-forwards, history stays consistent).
+# Updates to the open-source edition trigger the English sync (english-sync) over there, and the English edition kiki-agent updates along with it.
+# Requires the secret KIKI_PUBLIC_TOKEN (shared with releases: read/write Contents + Workflows on lkyxuan/kiki; pushing .github/workflows requires Workflows permission).
+# You can also run it manually from the Actions page and change "how many days behind".
+name: open-source-sync
+on:
+  schedule:
+    - cron: "0 2 1 1,4,7,10 *"   # January/April/July/October 1st every year
+  workflow_dispatch:
+    inputs:
+      days:
+        description: How many days the open-source edition lags behind
+        default: "90"
+concurrency:
+  group: open-source-sync
+jobs:
+  sync:
+    if: github.repository != 'lkyxuan/kiki'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false   # otherwise the repo token left by checkout overrides KIKI_PUBLIC_TOKEN in the public remote below
+      - name: Push the version from three months ago to the open-source edition
+        env:
+          TOKEN: ${{ secrets.KIKI_PUBLIC_TOKEN }}
+          DAYS: ${{ inputs.days || '90' }}
+        run: |
+          [ -n "$TOKEN" ] || { echo "KIKI_PUBLIC_TOKEN is not configured"; exit 1; }
+          git remote add public "https://x-access-token:${TOKEN}@github.com/lkyxuan/kiki.git"
+          git fetch -q public main
+          # The newest commit on main's first-parent chain that is older than N days ago
+          C=$(git rev-list --first-parent -1 --before="$DAYS days ago" origin/main)
+          [ -n "$C" ] || { echo "No commit older than $DAYS days yet"; exit 0; }
+          if git merge-base --is-ancestor "$C" public/main; then echo "The open-source edition already contains $C, no sync needed"; exit 0; fi
+          git merge-base --is-ancestor public/main "$C" || { echo "::error::The open-source edition's main has commits the private repo doesn't, so it can't fast-forward; please handle manually"; exit 1; }
+          echo "Syncing to $(git log -1 --format='%h %ad %s' --date=short "$C")"
+          git push public "$C:refs/heads/main"

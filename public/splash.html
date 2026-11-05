@@ -1,0 +1,337 @@
+<!doctype html>
+<!-- Kiki.app's opening sequence: racing through a colorful light tunnel → a flash of white → system checks tick off one by one → "Welcome back" → fade into the main interface.
+     Until the backend is truly ready, the last item, "Server", keeps checking; it only ticks and proceeds once ready. Click once or press any key to skip the animation.
+     On first launch, after the tunnel comes the welcome page (choose to run locally or connect to a remote).
+     The native window reads this file directly from the App (file://), when the backend may not be up yet, so it doesn't depend on the server or load external resources.
+     Conventions with the native window:
+       URL params  mode=welcome|wait  quick=1 skip the tunnel (reconnecting, or opening animation disabled)  s=status text  remote=prefilled remote address  fs=1 already fullscreen
+       Page → App  webkit.messageHandlers.kikiConnect: "local" or "remote:<address>"
+                   webkit.messageHandlers.kikiWindow: "drag" / "zoom" / "fullscreen" / "splash-done"
+       App → Page  kikiSplash.status(text) / .error(text) / .leave() backend is ready, send splash-done after the outro finishes / .fs(isFullscreen) -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiki</title>
+<style>
+  :root {
+    --text: #f2f6ff; --muted: #8e98b8; --cyan: #6ff3ff; --accent: #5b6cf0; --err: #ff6b7a;
+    --glass: rgba(14,20,44,.72); --line: rgba(130,200,255,.22);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; background: #000; }
+  body { font: 15px/1.5 var(--font); color: var(--text); -webkit-user-select: none; user-select: none; cursor: default; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+  .stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; pointer-events: none; }
+  .stage > * { pointer-events: auto; }
+  [hidden] { display: none !important; }
+
+  /* White flash */
+  #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #flash.go { animation: flash .9s ease-out; }
+  @keyframes flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+
+  /* Big text in the tunnel */
+  #title { text-align: center; pointer-events: none; }
+  #title .big { font: 800 clamp(44px, 9vw, 108px)/1 var(--font); letter-spacing: .18em; padding-left: .18em; color: #fff;
+                text-shadow: 0 0 18px rgba(140,220,255,.9), 0 0 60px rgba(120,120,255,.7); opacity: 0; }
+  #title .sub { margin-top: 18px; font: 500 13px var(--mono); letter-spacing: .5em; padding-left: .5em; color: var(--cyan); opacity: 0; }
+  #title.go .big { animation: zoomIn 1.5s cubic-bezier(.2,.7,.2,1) forwards; }
+  #title.go .sub { animation: fadeUp .8s .35s ease-out forwards; }
+  @keyframes zoomIn { 0% { opacity: 0; transform: scale(.55); filter: blur(10px); } 35% { opacity: 1; filter: blur(0); } 80% { opacity: 1; transform: scale(1.04); } 100% { opacity: 0; transform: scale(1.6); filter: blur(6px); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } 70% { opacity: 1; } to { opacity: 0; } }
+
+  /* System check panel */
+  .hud { width: min(420px, 100%); padding: 22px 24px 18px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line);
+         -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+         box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset, 0 30px 80px rgba(0,0,0,.6), 0 0 40px rgba(90,140,255,.15);
+         animation: hudIn .5s cubic-bezier(.2,.8,.2,1) both; position: relative; overflow: hidden; }
+  .hud::before { content: ""; position: absolute; left: 0; right: 0; top: -40%; height: 40%; background: linear-gradient(transparent, rgba(111,243,255,.08), transparent); animation: scan 2.6s linear infinite; pointer-events: none; }
+  @keyframes scan { to { transform: translateY(350%); } }
+  @keyframes hudIn { from { opacity: 0; transform: scale(.94) translateY(10px); } }
+  .hud h2 { margin: 0 0 14px; font: 600 12px var(--mono); letter-spacing: .32em; color: var(--cyan); display: flex; justify-content: space-between; }
+  .hud h2 span:last-child { color: var(--muted); letter-spacing: .1em; }
+  .row { display: flex; align-items: baseline; gap: 10px; padding: 6px 0; font-size: 14.5px; opacity: 0; transform: translateX(-12px); transition: opacity .3s, transform .3s; }
+  .row.on { opacity: 1; transform: none; }
+  .row .en { font: 11px var(--mono); color: var(--muted); letter-spacing: .1em; }
+  .row .dots { flex: 1; border-bottom: 1px dotted rgba(140,170,220,.35); transform: translateY(-4px); }
+  .row .st { font: 700 13px var(--mono); letter-spacing: .1em; color: var(--muted); min-width: 30px; text-align: right; }
+  .row.ok .st { color: var(--cyan); text-shadow: 0 0 10px rgba(111,243,255,.8); }
+  .row.wait .st::after { content: ""; display: inline-block; width: 10px; height: 10px; border: 2px solid var(--cyan); border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #status { margin-top: 12px; min-height: 20px; font-size: 13px; color: var(--muted); }
+
+  /* Welcome back */
+  #hello { text-align: center; }
+  #hello svg { width: 120px; height: 120px; filter: drop-shadow(0 0 30px rgba(120,140,255,.7)); animation: pop .7s cubic-bezier(.3,1.6,.5,1) both; }
+  #hello .w { margin-top: 14px; font: 700 34px var(--font); letter-spacing: .06em; animation: fadeUp2 .6s .15s ease-out both; }
+  #hello .e { margin-top: 4px; font: 12px var(--mono); letter-spacing: .4em; color: var(--cyan); animation: fadeUp2 .6s .3s ease-out both; }
+  /* slogan: Create the next miracle */
+  .slogan { margin-top: 22px; font: 600 15px var(--font); letter-spacing: .32em; padding-left: .32em; color: #ffd166; text-shadow: 0 0 18px rgba(255,209,102,.45); animation: fadeUp2 .6s .45s ease-out both; }
+  .slogan .en { display: block; margin-top: 6px; font: 11px var(--mono); letter-spacing: .3em; color: var(--muted); text-shadow: none; }
+  #welcome .slogan { margin: 6px 0 4px; }
+  @keyframes pop { from { transform: scale(.3); opacity: 0; } }
+  @keyframes fadeUp2 { from { opacity: 0; transform: translateY(10px); } }
+  .eyes { transition: transform .5s cubic-bezier(.4,1.4,.5,1); transform: translate(64px, -54px); }
+  .star { transform-box: fill-box; transform-origin: center; animation: tw 1.6s ease-in-out infinite; }
+  @keyframes tw { 50% { transform: scale(1.2) rotate(20deg); } }
+
+  /* Welcome page: choose where to run */
+  #welcome { width: min(700px, 100%); text-align: center; animation: hudIn .6s cubic-bezier(.2,.8,.2,1) both; }
+  #welcome .t { font: 800 40px var(--font); letter-spacing: .04em; text-shadow: 0 0 30px rgba(120,140,255,.6); }
+  .hi { display: inline-flex; align-items: center; gap: 10px; margin: 8px 0 22px; color: var(--muted); font-size: 14.5px; }
+  .hi img { width: 28px; height: 28px; border-radius: 50%; box-shadow: 0 0 0 2px var(--line); }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; text-align: left; }
+  @media (max-width: 620px) { .cards { grid-template-columns: 1fr; } }
+  .card { position: relative; padding: 18px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); color: inherit; font: inherit; width: 100%; text-align: left; cursor: pointer;
+          -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); transition: transform .25s cubic-bezier(.2,.8,.2,1), border-color .2s, box-shadow .25s; }
+  .card:hover { transform: translateY(-3px); border-color: rgba(111,243,255,.55); box-shadow: 0 0 30px rgba(111,243,255,.18); }
+  .card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+  .card .ic { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; margin-bottom: 12px; color: #fff; background: linear-gradient(135deg, #5b6cf0, #8b6cf5); box-shadow: 0 0 18px rgba(91,108,240,.6); }
+  .card.alt .ic { background: linear-gradient(135deg, #22b8e6, #5b6cf0); }
+  .card b { display: block; font-size: 16px; margin-bottom: 4px; }
+  .card .d { display: block; color: var(--muted); font-size: 13px; line-height: 1.55; }
+  .card .badge { position: absolute; top: 16px; right: 16px; font: 600 11px var(--mono); letter-spacing: .1em; padding: 2px 8px; border-radius: 99px; background: rgba(111,243,255,.12); color: var(--cyan); }
+  .remote { display: none; margin-top: 12px; gap: 8px; }
+  .card.open .remote { display: flex; }
+  .remote input { flex: 1; min-width: 0; height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--line); background: rgba(0,0,0,.35); color: var(--text); font: 13px var(--font); outline: none; -webkit-user-select: text; user-select: text; }
+  .remote input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(111,243,255,.15); }
+  .remote button { height: 34px; padding: 0 14px; border-radius: 9px; border: 0; background: var(--accent); color: #fff; font: 600 13px var(--font); cursor: pointer; }
+  #err { min-height: 20px; margin-top: 12px; color: var(--err); font-size: 13px; }
+
+  /* Bottom: skip hint, one-click fullscreen */
+  #skip { position: fixed; left: 0; right: 0; bottom: 18px; text-align: center; font: 11px var(--mono); letter-spacing: .3em; color: rgba(160,180,220,.45); pointer-events: none; transition: opacity .3s; }
+  #fs { position: fixed; right: 18px; bottom: 14px; display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border-radius: 99px;
+        border: 1px solid var(--line); background: var(--glass); color: var(--muted); font: 12.5px var(--font); cursor: pointer; transition: color .2s, border-color .2s; }
+  #fs:hover { color: var(--text); border-color: rgba(111,243,255,.55); }
+  #fs kbd { font: 11px var(--font); opacity: .7; }
+  body:not(.app) #fs { display: none; }
+
+  body.leaving .stage, body.leaving canvas { transition: opacity .55s ease, transform .55s ease; opacity: 0; transform: scale(1.06); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<canvas id="warp" aria-hidden="true"></canvas>
+<div id="flash"></div>
+
+<div class="stage">
+  <div id="title" aria-hidden="true"><div class="big">LINK START</div><div class="sub">KIKI · LINK START</div></div>
+
+  <div class="hud" id="hud" hidden>
+    <h2><span>SYSTEM CHECK</span><span id="clock"></span></h2>
+    <div class="row" data-k="ui"><span>Interface</span><span class="en">INTERFACE</span><span class="dots"></span><span class="st"></span></div>
+    <div class="row" data-k="core"><span>Engine</span><span class="en">ENGINE</span><span class="dots"></span><span class="st"></span></div>
+    <div class="row" data-k="mem"><span>Memory</span><span class="en">MEMORY</span><span class="dots"></span><span class="st"></span></div>
+    <div class="row" data-k="bao"><span>Bots</span><span class="en">AGENTS</span><span class="dots"></span><span class="st"></span></div>
+    <div class="row" data-k="srv"><span>Server</span><span class="en">SERVER</span><span class="dots"></span><span class="st"></span></div>
+    <div id="status" role="status"></div>
+  </div>
+
+  <div id="hello" hidden>
+    <svg viewBox="160 220 820 680" aria-hidden="true">
+      <circle cx="482" cy="542" r="290" fill="#fff"/>
+      <g class="eyes" fill="#5b6cf0"><rect x="410" y="450" width="64" height="146" rx="32"/><rect x="542" y="450" width="64" height="146" rx="32"/></g>
+      <path class="star" d="M812 252c10 64 30 84 94 94-64 10-84 30-94 94-10-64-30-84-94-94 64-10 84-30 94-94z" fill="#ffd166"/>
+    </svg>
+    <div class="w" id="helloText">Welcome back</div>
+    <div class="e">WELCOME TO KIKI</div>
+    <div class="slogan">Create the next miracle<span class="en">CREATE THE NEXT MIRACLE</span></div>
+  </div>
+
+  <div id="welcome" hidden>
+    <div class="t">Welcome to Kiki</div>
+    <div class="slogan">Create the next miracle<span class="en">CREATE THE NEXT MIRACLE</span></div>
+    <div class="hi"><img src="qiqi.png" alt="" onerror="this.remove()">Hi, I'm Kiki. First, choose where Kiki should run:</div>
+    <div class="cards">
+      <button class="card" id="local" type="button">
+        <span class="badge">Recommended</span>
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+        <b>Run on this Mac</b>
+        <span class="d">Pick this the first time. Kiki stays on duty in the background, even after you close the window.</span>
+      </button>
+      <div class="card alt" id="remoteCard" role="button" tabindex="0">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+        <b>Connect to another computer</b>
+        <span class="d">Already running Kiki on the Mac mini at home? Use this one as the interface only. Both computers need Tailscale running.</span>
+        <form class="remote" id="remoteForm">
+          <input id="addr" placeholder="https://mac-mini.xxx.ts.net" spellcheck="false" autocomplete="off">
+          <button type="submit">Connect</button>
+        </form>
+      </div>
+    </div>
+    <div id="err" role="alert"></div>
+  </div>
+</div>
+
+<div id="skip">Click to skip</div>
+<button id="fs" type="button"><span id="fsText">Full screen</span><kbd>⌃⌘F</kbd></button>
+
+<script>
+(function () {
+  var q = new URLSearchParams(window.KIKI_Q || location.search); // the app writes the params straight into the page
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = function (name, v) { try { window.webkit.messageHandlers[name].postMessage(v); } catch (e) {} };
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.kikiWindow) document.body.classList.add("app");
+  var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var quick = q.get("quick") === "1" || still;
+  var welcome = q.get("mode") === "welcome";
+
+  // ———— Light tunnel: colored rays rushing out from the center, speeding up, a white flash, then slowing into a background starfield ————
+  var cv = $("warp"), cx = cv.getContext("2d"), dpr = Math.max(1, window.devicePixelRatio || 1), W, H;
+  var N = 900, parts = [], speed = quick ? .004 : .0015, target = speed, rings = [];
+  function resize() { W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  function spawn(p, far) { p.a = Math.random() * 6.283; p.r = .05 + Math.random() * .95; p.z = far ? 1 : Math.random(); p.h = Math.random() * 360; p.pz = p.z; }
+  for (var i = 0; i < N; i++) { var p = {}; spawn(p); parts.push(p); }
+  resize(); addEventListener("resize", resize);
+  var t0 = performance.now(), mx = 0, my = 0, tx = 0, ty = 0;
+  addEventListener("pointermove", function (e) { tx = e.clientX / W - .5; ty = e.clientY / H - .5; }, { passive: true });
+  function draw(now) {
+    var t = (now - t0) / 1000;
+    speed += (target - speed) * .05;
+    mx += (tx - mx) * .05; my += (ty - my) * .05;
+    var fast = speed > .01;
+    // Leave a little motion trail during the sprint; once slowed, clear every frame (layering translucent black leaves a gray film)
+    if (fast) { cx.fillStyle = "rgba(0,0,0,.28)"; cx.fillRect(0, 0, W, H); } else cx.clearRect(0, 0, W, H);
+    var ox = W / 2 - mx * 60, oy = H / 2 - my * 40, R = Math.max(W, H) * .9;
+    cx.globalCompositeOperation = "lighter";
+    for (var i = 0; i < N; i++) {
+      var p = parts[i];
+      p.pz = p.z; p.z -= speed * (.6 + p.r * .4);
+      if (p.z <= .02) { spawn(p, true); continue; }
+      var k = p.r * R, x1 = ox + Math.cos(p.a) * k / p.pz * .12, y1 = oy + Math.sin(p.a) * k / p.pz * .12;
+      var x2 = ox + Math.cos(p.a) * k / p.z * .12, y2 = oy + Math.sin(p.a) * k / p.z * .12;
+      var al = Math.min(1, (1 - p.z) * 1.4);
+      cx.strokeStyle = "hsla(" + ((p.h + t * 40) % 360) + "," + (fast ? 95 : 60) + "%," + (fast ? 68 : 80) + "%," + al.toFixed(3) + ")";
+      cx.lineWidth = Math.max(.6, (1 - p.z) * (fast ? 3 : 1.8));
+      cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
+    }
+    // Halos: rings spreading out from the center
+    for (var j = rings.length - 1; j >= 0; j--) {
+      var g = rings[j]; g.r += g.v; g.v *= 1.045; g.a *= .965;
+      if (g.a < .02) { rings.splice(j, 1); continue; }
+      cx.strokeStyle = "hsla(" + g.h + ",100%,75%," + g.a.toFixed(3) + ")"; cx.lineWidth = 2;
+      cx.beginPath(); cx.arc(ox, oy, g.r, 0, 6.283); cx.stroke();
+    }
+    cx.globalCompositeOperation = "source-over";
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+  var ringTimer = null;
+  function ringsOn(on) {
+    clearInterval(ringTimer);
+    if (on) ringTimer = setInterval(function () { rings.push({ r: 10, v: 3, a: .9, h: Math.random() * 360 }); }, 160);
+  }
+
+  // ———— Script ————
+  var phase = "", ready = false, timers = [];
+  var later = function (ms, f) { timers.push(setTimeout(f, ms)); };
+  function show(id) { ["title", "hud", "hello", "welcome"].forEach(function (x) { $(x).hidden = x !== id; }); }
+
+  function tunnel() {
+    phase = "tunnel"; show("title");
+    target = .006; ringsOn(true);
+    later(80, function () { $("title").classList.add("go"); });
+    later(700, function () { target = .035; });          // accelerate into it
+    later(1500, function () { target = .07; });
+    later(1900, flashThen);
+  }
+  function flashThen() {
+    ringsOn(false);
+    $("flash").classList.remove("go"); void $("flash").offsetWidth; $("flash").classList.add("go");
+    later(140, function () { speed = .004; target = .0015; rings = []; welcome ? showWelcome() : check(); });
+  }
+  function skipTunnel() {
+    if (phase !== "tunnel") return;
+    timers.forEach(clearTimeout); timers = []; flashThen();
+  }
+
+  var rows = [].slice.call(document.querySelectorAll(".row"));
+  function check() {
+    phase = "check"; show("hud"); $("skip").style.opacity = 0;
+    rows.forEach(function (r, i) {
+      later(quick ? 0 : 120 + i * 220, function () {
+        r.classList.add("on");
+        if (r.dataset.k === "srv") { if (ready) ok(r); else r.classList.add("wait"); }
+        else later(quick ? 0 : 160, function () { ok(r); });
+      });
+    });
+    later(quick ? 0 : 120 + rows.length * 220 + 200, function () { phase = "checked"; maybeFinish(); });
+  }
+  function ok(r) { r.classList.remove("wait"); r.classList.add("ok"); r.querySelector(".st").textContent = "OK"; }
+  function maybeFinish() {
+    if (!ready || phase !== "checked") return;
+    ok(rows[rows.length - 1]);
+    phase = "hello";
+    later(quick ? 150 : 380, function () {
+      if (quick) return done();
+      show("hello");
+      var h = new Date().getHours();
+      $("helloText").textContent = h < 5 ? "It's late. Welcome back" : h < 11 ? "Good morning. Welcome back" : h < 18 ? "Welcome back" : "Good evening. Welcome back";
+      later(1000, done);
+    });
+  }
+  function done() {
+    if (phase === "done") return;
+    phase = "done"; document.body.classList.add("leaving");
+    setTimeout(function () { msg("kikiWindow", "splash-done"); }, 520);
+  }
+  function showWelcome() { phase = "welcome"; show("welcome"); $("skip").style.opacity = 0; }
+
+  // Click or keypress: skip during the tunnel, go straight in on "Welcome back"
+  function skip(e) {
+    if (e && e.target && e.target.closest && e.target.closest("button, input, .card")) return;
+    if (phase === "tunnel") skipTunnel(); else if (phase === "hello") { timers.forEach(clearTimeout); done(); }
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && phase === "welcome" && !e.target.closest("input, .card")) return chooseLocal(); // Enter on the welcome page = run on this Mac
+    if (phase !== "welcome") skip(e);
+  });
+
+  // ———— Welcome page ————
+  var card = $("remoteCard"), addr = $("addr");
+  if (q.get("remote")) { addr.value = q.get("remote"); card.classList.add("open"); }
+  function chooseLocal() { $("err").textContent = ""; msg("kikiConnect", "local"); }
+  $("local").onclick = chooseLocal;
+  card.onclick = function (e) { if (e.target.closest(".remote")) return; card.classList.add("open"); addr.focus(); };
+  card.onkeydown = function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === card) { e.preventDefault(); card.click(); } };
+  $("remoteForm").onsubmit = function (e) {
+    e.preventDefault();
+    var v = addr.value.trim();
+    if (!v) { $("err").textContent = "Enter the address of that computer first."; addr.focus(); return; }
+    $("err").textContent = ""; msg("kikiConnect", "remote:" + v);
+  };
+
+  // ———— Window: drag, double-click to zoom, full screen ————
+  document.addEventListener("mousedown", function (e) {
+    if (e.button !== 0) return;
+    if (e.target.closest("button, input, .card, a")) return;
+    if (phase === "tunnel" || phase === "hello") return skip(e);
+    msg("kikiWindow", e.detail === 2 ? "zoom" : "drag");
+  });
+  $("fs").onclick = function () { msg("kikiWindow", "fullscreen"); };
+  function setFs(on) { $("fsText").textContent = on ? "Exit full screen" : "Full screen"; }
+  setFs(q.get("fs") === "1");
+  (function tick() { var d = new Date(); $("clock").textContent = d.toTimeString().slice(0, 8); setTimeout(tick, 1000); })();
+
+  // ———— Called by the native window ————
+  var statusEl = $("status");
+  statusEl.textContent = q.get("s") || "";
+  window.kikiSplash = {
+    status: function (t) {
+      statusEl.textContent = t || "";
+      if (phase === "welcome" && t) { welcome = false; check(); } // choice made, start the self-check
+    },
+    error: function (t) { $("err").textContent = t || ""; },
+    leave: function () { ready = true; maybeFinish(); },
+    fs: setFs,
+  };
+
+  if (quick) { $("skip").hidden = true; welcome ? showWelcome() : check(); } else tunnel();
+})();
+</script>
+</body>
+</html>
