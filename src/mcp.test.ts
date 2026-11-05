@@ -56,7 +56,7 @@ test("preset cua-driver: listed even when never configured, writes the full path
   assert.equal(cua.preset, true);
   assert.equal(cua.on, false);
   assert.equal(cua.installed, false);
-  assert.throws(() => m.setOn("cua-driver", true, none), /not installed yet/);
+  assert.throws(() => m.setOn("cua-driver", true, none), /is not installed/);
   m.setOn("cua-driver", false, none); // never configured, disabling doesn't error
 
   const bin = join(dir, "cua-driver");

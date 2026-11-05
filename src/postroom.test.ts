@@ -54,7 +54,7 @@ test("create a mailbox folder and it connects; new messages queue up, go to Kiki
   await pr.poll();
   await pr.settled();
   assert.equal(delivered.length, 1);
-  assert.match(delivered[0], /^@Work bot \[Mailroom\] external agent "grokbot" sent "Daily report"/);
+  assert.match(delivered[0], /^@Work bot \[Mailroom\] External agent "grokbot" sent "Daily report"/);
   assert.ok(existsSync(join(box, "to-kiki", "done", "1.md")));
   const s = pr.state();
   assert.equal(s.agents[0].state, "working");
@@ -104,7 +104,7 @@ test("needs your attention: sender flagged attention, routing failed, sender err
   const att = pr.state().attention;
   assert.equal(att.length, 2);
   assert.equal(att[0].id, "agent:grokbot");
-  assert.match(att[1].why, /not routed: model crashed/);
+  assert.match(att[1].why, /Could not route: model crashed/);
   pr.dismiss(att[1].id);
   assert.equal(pr.state().attention.length, 1);
 });
@@ -125,8 +125,8 @@ test("unknown connection type: shows unreachable, assigning work errors", async 
   await pr.poll();
   const x = pr.state().agents.find((a) => a.name === "x");
   assert.equal(x?.state, "offline");
-  assert.match(x?.note ?? "", /unknown/);
-  await assert.rejects(pr.send("x", "hi"), /unknown/);
+  assert.match(x?.note ?? "", /Unknown/);
+  await assert.rejects(pr.send("x", "hi"), /Unknown/);
 });
 
 test("internal sources land in the same inbox: route false only notifies, doesn't route", async () => {
@@ -227,7 +227,7 @@ test("key rules: sender flagged attention or matched your rule, alert on receipt
   drop("2.md", "---\ntitle: Daily report\n---\nall normal");
   await pr.poll();
   await pr.settled();
-  assert.deepEqual(notified, ["matched rule \"contains: /expir|payment/\"|Domain about to expire"]);
+  assert.deepEqual(notified, ["hit rule \"contains: /expir|payment/\"|Domain about to expire"]);
   assert.equal(delivered.length, 2); // both still go to Kiki as usual
   pr.push("boss", { text: "Call me back" });
   await pr.settled();

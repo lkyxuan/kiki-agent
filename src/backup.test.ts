@@ -94,9 +94,9 @@ test("force push: saves the remote branch locally first, undo pushes it back as 
   assert.ok("undo" in b, JSON.stringify(b));
   git(r, "push", "-q", "--force", "origin", "main");
   assert.notEqual(git(remote, "rev-parse", "main"), before);
-  assert.match(undo(b.undo), /pushed back as it was: main/);
+  assert.match(undo(b.undo), /pushed back to their original state: main/);
   assert.equal(git(remote, "rev-parse", "main"), before);
-  assert.match(undo(b.undo), /no changes needed/);
+  assert.match(undo(b.undo), /nothing to change/);
 });
 
 test("force push undo: only touches the branch pushed this time; does not overwrite if someone else pushed since", () => {
@@ -116,7 +116,7 @@ test("force push undo: only touches the branch pushed this time; does not overwr
   // another branch was pushed afterwards: undo must not touch it
   git(r, "push", "-q", "--force", "origin", "HEAD:other");
   const other = git(remote, "rev-parse", "other");
-  assert.match(undo(b.undo), /pushed back as it was: main/);
+  assert.match(undo(b.undo), /pushed back to their original state: main/);
   assert.equal(git(remote, "rev-parse", "main"), before);
   assert.equal(git(remote, "rev-parse", "other"), other);
 
@@ -129,7 +129,7 @@ test("force push undo: only touches the branch pushed this time; does not overwr
   git(r, "commit", "-qm", "someone else pushed again");
   git(r, "push", "-q", "origin", "main");
   const later = git(remote, "rev-parse", "main");
-  assert.match(undo(b2.undo), /someone else has pushed since/);
+  assert.match(undo(b2.undo), /pushed to by someone else afterward/);
   assert.equal(git(remote, "rev-parse", "main"), later);
 });
 

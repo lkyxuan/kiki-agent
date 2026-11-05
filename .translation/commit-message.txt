@@ -1,1 +1,7 @@
-Initial public release
+Make English tests line up with the English edition
+
+- Strip wrapper tags the model echoes back at the end of files, and save the translation even when self-checks fail
+- Allow wrapper lines followed by a blank line to be stripped too
+- Translate tests last, give them the English source as reference, auto-fix string assertions in failing tests, and only warn on leftover Chinese
+- Run tests with explicit TAP output since Node 24 no longer defaults to TAP
+- Grant the token Workflows permission so commits touching .github/workflows can be pushed

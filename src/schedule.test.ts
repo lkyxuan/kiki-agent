@@ -22,13 +22,13 @@ test("parseWhen: various formats", () => {
 });
 
 test("nextRun: daily, weekdays, weekly, hourly", () => {
-  assert.equal(fmt(nextRun("daily 09:00", now)), "11-3 9:00");
-  assert.equal(fmt(nextRun("daily 21:00", now)), "11-2 21:00");
+  assert.equal(fmt(nextRun("every day 09:00", now)), "11-3 9:00");
+  assert.equal(fmt(nextRun("every day 21:00", now)), "11-2 21:00");
   const fri = new Date(2026, 10, 6, 10, 0);
   assert.equal(fmt(nextRun("weekdays 09:00", fri)), "11-9 9:00", "skip the weekend after Friday");
   assert.equal(fmt(nextRun("every Monday 09:00", now)), "11-9 9:00");
   assert.equal(fmt(nextRun("every Wednesday 20:00", now)), "11-4 20:00");
-  assert.equal(fmt(nextRun("hourly", now)), "11-2 11:00");
+  assert.equal(fmt(nextRun("every hour", now)), "11-2 11:00");
   assert.equal(nextRun("occasionally", now), undefined);
 });
 

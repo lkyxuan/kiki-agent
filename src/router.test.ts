@@ -82,8 +82,8 @@ test("model says keep chatting: go into the specified conversation, and the prom
   await say("/new life fitness");
   ctl.routeAnswer = '{"action":"continue","target":"dev/router","mode":"chat"}';
   await say("tweak the routing part again");
-  assert.match(out.at(-1)!, /^→ dev\/router · keep chatting/);
-  assert.match(ctl.routePrompts.at(-1)!, /life\/fitness【current】/);
+  assert.match(out.at(-1)!, /^→ dev\/router · continued/);
+  assert.match(ctl.routePrompts.at(-1)!, /life\/fitness\[current\]/);
 });
 
 test("model gave a nonexistent conversation: don't create one, fall back to the current conversation", async () => {
@@ -91,7 +91,7 @@ test("model gave a nonexistent conversation: don't create one, fall back to the 
   await say("/new dev router");
   ctl.routeAnswer = '{"action":"continue","target":"dev/made-up","mode":"chat"}';
   await say("mm");
-  assert.match(out.at(-1)!, /^→ dev\/router · keep chatting/);
+  assert.match(out.at(-1)!, /^→ dev\/router · continued/);
 });
 
 test("model gave options but we don't ask the user back: just take the first one", async () => {
@@ -109,14 +109,14 @@ test("@botname only picks within that bot; if the model goes out of bounds, fall
   ctl.routeAnswer = '{"action":"continue","target":"life/fitness","mode":"chat"}';
   await say("@dev take a look at this error");
   assert.match(out.at(-1)!, /^→ dev\/main chat · handed to bot\n\n\[.*\] take a look at this error$/);
-  assert.match(ctl.routePrompts.at(-1)!, /only under it/);
+  assert.match(ctl.routePrompts.at(-1)!, /only continue or new under it/);
 });
 
 test("/to redirects the previous message elsewhere", async () => {
   const { out, say } = setup();
   await say("going hiking this weekend"); // goes into life/default
   await say("/to dev misc");
-  assert.match(out.at(-1)!, /^→ dev\/misc · new\n\n\[.*\] going hiking this weekend$/);
+  assert.match(out.at(-1)!, /^→ dev\/misc · opened\n\n\[.*\] going hiking this weekend$/);
 });
 
 test("judged as background: hand off to a background task, ack first, report back to the inbox and the original conversation when done, and don't change the current conversation", async () => {
@@ -125,11 +125,11 @@ test("judged as background: hand off to a background task, ack first, report bac
   ctl.routeAnswer = '{"action":"continue","target":"dev/mainline","mode":"background","taskTitle":"tidy README"}';
   await say("tidy up the README");
   await new Promise((r) => setTimeout(r, 10));
-  assert.match(out.at(-2)!, /^→ dev · background task "tidy README"\n\nok, handed off to the background, I'll report back here and to dev\/mainline when done/);
-  assert.match(out.at(-1)!, /^✅ background task "tidy README" done（\[bg-tidy README\]\(kiki:dev\/bg-tidy README\)）：\n\n.*tidy up the README/s);
+  assert.match(out.at(-2)!, /^→ dev · Background task "tidy README"\n\nOkay, handed to the background; I'll report back when it's done here and in dev\/mainline/);
+  assert.match(out.at(-1)!, /^✅ Background task "tidy README" finished \(\[bg-tidy README\]\(kiki:dev\/bg-tidy README\)\):\n\n.*tidy up the README/s);
   assert.equal(reg.current("app")?.name, "mainline");
   const main = reg.get("dev", "mainline")!;
-  assert.match(ctl.notes.at(-1)!, new RegExp(`^${main.path} ✅ background task "tidy README" done`));
+  assert.match(ctl.notes.at(-1)!, new RegExp(`^${main.path} ✅ Background task "tidy README" completed`));
   assert.equal(router.tasks.list()[0].status, "done");
 });
 
@@ -141,7 +141,7 @@ test("continuing from a conversation judged as background: fork that conversatio
   await say("implement it per the design we just discussed");
   await new Promise((r) => setTimeout(r, 10));
   assert.deepEqual(ctl.forks, [src]);
-  assert.match(out.at(-1)!, /✅ background task "implement" done（\[bg-implement\]\(kiki:dev\/bg-implement\)）/);
+  assert.match(out.at(-1)!, /✅ Background task "implement" finished \(\[bg-implement\]\(kiki:dev\/bg-implement\)\)/);
 });
 
 test("work handed to a bot judged as background: don't fork the main chat, just start a task", async () => {
@@ -151,7 +151,7 @@ test("work handed to a bot judged as background: don't fork the main chat, just 
   await new Promise((r) => setTimeout(r, 10));
   assert.deepEqual(reg.list().map((s) => s.name).filter((n) => n !== "main chat"), ["bg-write weekly report"]);
   assert.deepEqual(ctl.forks, []);
-  assert.match(out.at(-1)!, /✅ background task "write weekly report" done/);
+  assert.match(out.at(-1)!, /✅ Background task "write weekly report" finished/);
   assert.equal(ctl.notes.length, 0);
 });
 
@@ -162,8 +162,8 @@ test("when there are more than 20 conversations, the current conversation is sti
   await say("/use dev/old conversation");
   ctl.routeAnswer = '{"action":"continue","target":"dev/old conversation","mode":"chat"}';
   await say("continue");
-  assert.match(ctl.routePrompts.at(-1)!, /dev\/old conversation【current】/);
-  assert.match(out.at(-1)!, /^→ dev\/old conversation · keep chatting/);
+  assert.match(ctl.routePrompts.at(-1)!, /dev\/old conversation\[current\]/);
+  assert.match(out.at(-1)!, /^→ dev\/old conversation · continued/);
 });
 
 test("two messages sent in a row in the same chat: the first one enters the conversation first, even if the first message routes slower", async () => {
@@ -180,11 +180,11 @@ test("/bg forces background (forks the current conversation), /tasks lists, /ret
   await say("/new dev mainline");
   await say("/bg tidy up the README");
   await new Promise((r) => setTimeout(r, 10));
-  assert.match(out.at(-2)!, /handed off to the background/);
-  assert.match(out.at(-1)!, /✅ background task "tidy up the README" done/);
+  assert.match(out.at(-2)!, /handed to the background/);
+  assert.match(out.at(-1)!, /✅ Background task "tidy up the READ" finished/);
   assert.ok(reg.list().find((s) => s.background));
   await say("/tasks");
-  assert.match(out.at(-1)!, /^\[done\] tidy up the README · dev · /);
+  assert.match(out.at(-1)!, /^\[Done\] tidy up the READ · dev · /);
   const id = router.tasks.list()[0].id;
   await say(`/retry ${id}`);
   assert.match(out.at(-1)!, /restarted/);
@@ -198,7 +198,7 @@ test("/new /use /list manual commands still work as usual", async () => {
   await say("/new dev misc");
   await say("/new life misc");
   await say("/use misc");
-  assert.match(out.at(-1)!, /duplicate name/);
+  assert.match(out.at(-1)!, /Duplicate names/);
   await say("/use dev/misc");
   assert.equal(reg.current("app")?.agent, "dev");
   await say("/list");
@@ -227,7 +227,7 @@ test("handoff (chat): open a new conversation, the first message is the handoff 
   const r = await router.handoff({ fromPath: from, bao: "life", name: "buy computer", brief: "【goal】pick a Mac", mode: "chat" });
   assert.match(r, /handed off to life\/buy computer/);
   await new Promise((x) => setTimeout(x, 5));
-  assert.match(ctl.sends.at(-1)!, /handed off from "dev\/mainline".*\n\n【goal】pick a Mac\n\nfirst say in one sentence the goal as you understand it, then directly/s);
+  assert.match(ctl.sends.at(-1)!, /handed off from "dev\/mainline".*\n\n【goal】pick a Mac\n\nFirst say in one sentence what you understand the goal to be, then continue the conversation directly/s);
   assert.match(ctl.announced.at(-1)!, /handed off/, "the new conversation's answer must be announced to the UI to wrap up");
   await router.handoff({ fromPath: from, bao: "life", name: "buy computer", brief: "x", mode: "chat" });
   assert.ok(reg.get("life", "buy computer2"));
@@ -247,17 +247,17 @@ test("handoff (background): start a clean new conversation per the brief, don't 
   assert.match(r, /background task "write script"/);
   await new Promise((x) => setTimeout(x, 30));
   assert.deepEqual(ctl.forks, []);
-  assert.match(ctl.sends.at(-1)!, /【goal】write a backup script\n\nplease start directly/);
-  assert.match(ctl.notes.at(-1)!, new RegExp(`^${from} ✅ background task "write script" done`));
+  assert.match(ctl.sends.at(-1)!, /【goal】write a backup script\n\nPlease start working right away/);
+  assert.match(ctl.notes.at(-1)!, new RegExp(`^${from} ✅ Background task "write script" completed`));
 });
 
 test("kiki_peek: list all conversations; view the last few of a conversation; when not found, list the existing ones", async () => {
   const { router, say } = setup();
   await say("/new dev router");
-  assert.match(router.peek(undefined, 10), /## dev（writes code）\n- dev\/router\n## life（daily life）/);
-  assert.match(router.peek("dev/router", 10), /^dev\/router last 2（of 2）：\n\nuser：ask .*\n\nassistant：answer$/);
-  assert.match(router.peek("router", 1), /last 1/);
-  assert.throws(() => router.peek("dev/none", 5), /conversation "dev\/none" not found. Existing: dev\/router/);
+  assert.match(router.peek(undefined, 10), /## dev \(writes code\)\n- dev\/router\n## life \(daily life\)/);
+  assert.match(router.peek("dev/router", 10), /^dev\/router most recent 2 of 2 messages:\n\nUser: ask .*\n\nAssistant: answer$/);
+  assert.match(router.peek("router", 1), /most recent 1/);
+  assert.throws(() => router.peek("dev/none", 5), /Conversation "dev\/none" not found. Existing: dev\/router/);
 });
 
 test("kiki_relay: pass a message to another conversation, the answer is recorded back to the originating conversation; can't relay to yourself", async () => {
@@ -267,11 +267,11 @@ test("kiki_relay: pass a message to another conversation, the answer is recorded
   await say("/new life buy computer");
   const b = reg.current("app")!.path;
   const r = await router.relay(b, "dev/router", "budget set at 8000");
-  assert.match(r, /passed to dev\/router/);
+  assert.match(r, /Relayed to dev\/router/);
   await new Promise((res) => setTimeout(res, 10));
-  assert.match(ctl.sends.at(-1)!, /^【message from "life\/buy computer"】\nbudget set at 8000/);
+  assert.match(ctl.sends.at(-1)!, /^\[Message relayed from "life\/buy computer"\]\nbudget set at 8000/);
   assert.ok(ctl.announced.some((x) => x.startsWith(a)));
-  assert.match(ctl.notes.at(-1)!, new RegExp(`^${b} 【dev/router reply】`));
+  assert.match(ctl.notes.at(-1)!, new RegExp(`^${b} \\[Reply from dev/router\\]`));
   await assert.rejects(router.relay(b, "life/buy computer", "x"), /current conversation/);
 });
 
@@ -281,8 +281,8 @@ test("handoff: handing off same-named things at the same time, each gets a diffe
     router.handoff({ fromPath: undefined, bao: "life", name: "buy computer", brief: "x", mode: "chat" }),
     router.handoff({ fromPath: undefined, bao: "life", name: "buy computer", brief: "y", mode: "chat" }),
   ]);
-  assert.match(a, /life\/buy computer，/);
-  assert.match(b, /life\/buy computer2，/);
+  assert.match(a, /life\/buy computer;/);
+  assert.match(b, /life\/buy computer2;/);
   assert.deepEqual(reg.list("life").map((s) => s.name).sort(), ["buy computer", "buy computer2"]);
 });
 
@@ -295,23 +295,23 @@ test("feature toggles: turning off auto-routing sends into the current conversat
   const before = ctl.routePrompts.length;
   await say("Just saying something");
   assert.equal(ctl.routePrompts.length, before);
-  assert.match(out.at(-1)!, /^→ dev\/Router · Continue chatting/);
+  assert.match(out.at(-1)!, /^→ dev\/router · continued/);
   off.clear();
   off.add("background");
   ctl.routeAnswer = '{"action":"continue","target":"dev/路由器","mode":"background","taskTitle":"跑测试"}';
   await say("Go run the tests");
-  assert.match(out.at(-1)!, /^→ dev\/Router · Continue chatting/);
+  assert.match(out.at(-1)!, /^→ dev\/router · continued/);
   const r = await router.handoff({ fromPath: undefined, bao: "life", name: "写脚本", brief: "x", mode: "background" });
-  assert.match(r, /Handed off to life\/Write script/);
+  assert.match(r, /handed off to life\/写脚本/);
 });
 
 test("No suitable bot: routing creates a new bot and hands it to its main chat", async () => {
   const { out, say, ctl, reg } = setup();
   ctl.routeAnswer = '{"action":"new","agent":"购物宝","newBao":"买东西：比价、选型","name":"选iPad","mode":"chat"}';
   await say("Pick out an iPad for my mom");
-  assert.deepEqual(ctl.duties, ["Shopping bot:买东西：比价、选型"]);
-  assert.match(out.at(-1)!, /^→ Shopping bot\/Main chat · New bot/);
-  assert.equal(reg.current("app")?.agent, "Shopping bot");
+  assert.deepEqual(ctl.duties, ["购物宝:买东西：比价、选型"]);
+  assert.match(out.at(-1)!, /^→ 购物宝\/main chat · created bot/);
+  assert.equal(reg.current("app")?.agent, "购物宝");
 });
 
 test("Invalid new bot name or @-mentioning a bot: don't create, fall back to default", async () => {
@@ -319,7 +319,7 @@ test("Invalid new bot name or @-mentioning a bot: don't create, fall back to def
   ctl.routeAnswer = '{"action":"new","agent":"a/b","newBao":"x","name":"y","mode":"chat"}';
   await say("Whatever");
   assert.deepEqual(ctl.duties, []);
-  assert.match(out.at(-1)!, /^→ life\/Main chat/);
+  assert.match(out.at(-1)!, /^→ life\/main chat/);
   ctl.routeAnswer = '{"action":"new","agent":"购物宝","newBao":"x","name":"y","mode":"chat"}';
   await say("@dev whatever");
   assert.deepEqual(ctl.duties, []);
@@ -329,18 +329,18 @@ test("Something answerable in one line: Kiki answers directly, no conversation e
   const { out, say, ctl, reg } = setup();
   ctl.routeAnswer = '{"action":"reply","text":"Hi there!","reason":"打招呼"}';
   await say("Hello");
-  assert.equal(out.at(-1), "Kiki · Direct answer\n\nHi there!");
-  assert.match(ctl.routePrompts.at(-1)!, /^Now: .*\d{4}.*（.+）\n/); // include the time so "what time is it" gets the right answer
+  assert.equal(out.at(-1), "Kiki · direct answer\n\nHi there!");
+  assert.match(ctl.routePrompts.at(-1)!, /^Now: .*\d{4}.*\(.+\)\n/); // include the time so "what time is it" gets the right answer
   assert.equal(ctl.sends.length, 0);
   assert.equal(reg.current("app"), undefined);
 });
 
 test("Handing off to a bot that doesn't exist yet: create it if duty is given, error otherwise", async () => {
   const { router, ctl } = setup();
-  await assert.rejects(router.handoff({ fromPath: undefined, bao: "生活宝", name: "买iPad", brief: "x", mode: "chat" }), /To create one, fill in duty too/);
+  await assert.rejects(router.handoff({ fromPath: undefined, bao: "生活宝", name: "买iPad", brief: "x", mode: "chat" }), /to create one, also fill in duty/);
   const r = await router.handoff({ fromPath: undefined, bao: "生活宝", duty: "日常生活", name: "买iPad", brief: "x", mode: "chat" });
-  assert.match(r, /^Created bot "Life bot", handed off to Life bot\/Buy iPad/);
-  assert.deepEqual(ctl.duties, ["Life bot:日常生活"]);
+  assert.match(r, /^created bot "生活宝", handed off to 生活宝\/买iPad/);
+  assert.deepEqual(ctl.duties, ["生活宝:日常生活"]);
 });
 
 test("One message split into several items: one goes into an existing thread, one creates a new bot handed to its main chat, each gets its own brief, and Kiki replies with a list with cards", async () => {
@@ -358,9 +358,9 @@ test("One message split into several items: one goes into an existing thread, on
   await new Promise((r) => setTimeout(r, 10));
   assert.equal(
     out.at(-1),
-    "Kiki · Split into 2 items, handed off separately\n\n- [Router](kiki:dev/路由器)：接着聊\n- [Life bot](kiki:生活宝/主对话)：新建宝",
+    "→ 生活宝/main chat · created bot\n\n[/fake/生活宝/4.jsonl] Routing needs to support splitting; also help me pick an iPad for my mom, budget 3000",
   );
-  assert.deepEqual(ctl.duties, ["Life bot:日常生活"]);
+  assert.deepEqual(ctl.duties, ["生活宝:日常生活"]);
   assert.deepEqual(ctl.sends.slice(-2).sort(), ["给妈妈选 iPad，预算 3000", "路由要支持拆分"]);
   assert.equal(ctl.announced.length, 2);
   assert.equal(reg.current("app")?.name, "Router");
@@ -376,14 +376,14 @@ test("Split leaves only one valid item: treat as a normal dispatch, hand over th
     ],
   });
   await say("Help me make a grocery list");
-  assert.match(out.at(-1)!, /^→ life\/Main chat · Handed to bot\n\n\[.*\] Help me make a grocery list$/);
+  assert.match(out.at(-1)!, /^→ life\/main chat · handed to bot\n\n\[.*\] Help me make a grocery list$/);
   assert.equal(ctl.sends.at(-1), "Help me make a grocery list");
 });
 
 test("Concurrent main-chat creation doesn't create two with the same name", async () => {
   const { router, reg } = setup();
   await Promise.all([router.ensureMains(), router.ensureMains(), router.ensureMain("dev")]);
-  assert.deepEqual(reg.list().map((x) => `${x.agent}/${x.name}`).sort(), ["dev/Main chat", "life/Main chat"]);
+  assert.deepEqual(reg.list().map((x) => `${x.agent}/${x.name}`).sort(), ["dev/main chat", "life/main chat"]);
 });
 
 test("Background work handed to the main chat in a split doesn't fork the main chat", async () => {
@@ -424,7 +424,7 @@ test("Clear main chat: swap in a new file, name unchanged, chats attached to it 
   reg.setCurrent("app", old);
   const rec = await router.clearMain(old);
   assert.notEqual(rec.path, old);
-  assert.equal(reg.get("dev", "主对话")?.path, rec.path);
+  assert.equal(reg.get("dev", "main chat")?.path, rec.path);
   assert.equal(reg.current("app")?.path, rec.path);
   assert.deepEqual(discarded, [old]);
   const t = await router.newSession("dev", "Discussion");
@@ -437,9 +437,9 @@ test("kiki_relay with only a bot name: hand to that bot's main chat", async () =
   await say("/new dev Router");
   const from = reg.current("app")!.path;
   const r = await router.relay(from, "life", "User asks: where should we go this weekend");
-  assert.match(r, /Relayed to life\/Main chat/);
+  assert.match(r, /Relayed to life\/main chat/);
   await new Promise((x) => setTimeout(x, 10));
-  assert.match(ctl.sends.at(-1)!, /^【Message relayed from "dev\/路由器"】\nUser asks: where should we go this weekend/);
+  assert.match(ctl.sends.at(-1)!, /^\[Message relayed from "dev\/Router"\]\nUser asks: where should we go this weekend/);
 });
 
 test("Kiki routing only sees summaries: each bot's main chat + 5 most recent + current conversation, older ones just counted", async () => {
@@ -452,12 +452,12 @@ test("Kiki routing only sees summaries: each bot's main chat + 5 most recent + c
   ctl.routeAnswer = '{"action":"continue","target":"dev/串8","mode":"chat"}';
   await say("Keep going");
   const p = ctl.routePrompts.at(-1)!;
-  assert.match(p, /dev\/Thread 8：Summary of thread 8/);
-  assert.match(p, /dev\/Thread 4：Summary of thread 4/);
-  assert.doesNotMatch(p, /dev\/串3/);
-  assert.match(p, /dev\/Thread 1【current】：Summary of thread 1/);
-  assert.match(p, /2 older threads/);
-  assert.match(p, /dev\/Main chat/);
+  assert.match(p, /dev\/Thread 8: Summary of thread 8/);
+  assert.match(p, /dev\/Thread 4: Summary of thread 4/);
+  assert.doesNotMatch(p, /dev\/Thread 3/);
+  assert.match(p, /dev\/Thread 1\[current\]: Summary of thread 1/);
+  assert.match(p, /2 more older threads/);
+  assert.match(p, /dev\/main chat/);
 });
 
 test("Main chat's thread list: most recently active first, with summaries and card syntax", async () => {
@@ -470,8 +470,8 @@ test("Main chat's thread list: most recently active first, with summaries and ca
   reg.setSummary(b.path, "README half written", new Date(2026, 0, 1, 9));
   const d = router.threadDigest("dev");
   assert.ok(d.indexOf("Fix bug") < d.indexOf("Write docs"));
-  assert.match(d, /\[Fix bug\]\(kiki:dev\/修 bug\)：Login page error, cause found/);
-  assert.doesNotMatch(d, /Main chat\]/);
+  assert.match(d, /\[Fix bug\]\(kiki:dev\/Fix bug\): Login page error, cause found/);
+  assert.doesNotMatch(d, /main chat\]/);
 });
 
 test("Clearing the main chat also clears its summary", async () => {
@@ -493,13 +493,13 @@ test("Background task stuck: inbox explains where it's stuck, /answer finishes i
   };
   await say("/bg 整理周报");
   await new Promise((r) => setTimeout(r, 10));
-  assert.match(out.at(-1)!, /⏸ Background task "Weekly report" is missing something, waiting on you.*\n\nWhich project should I focus on?\n\n.*\/answer /s);
+  assert.match(out.at(-1)!, /⏸ Background task "整理周报" is missing something and is waiting on you.*\n\nWhich project should I focus on?\n\n.*\/answer /s);
   const id = router.tasks.list()[0].id;
   await say(`/answer ${id} Kiki`);
   await new Promise((r) => setTimeout(r, 10));
-  assert.match(out.at(-1)!, /✅ Background task "Weekly report" done/);
+  assert.match(out.at(-1)!, /✅ Background task "整理周报" finished/);
   await say("/tasks");
-  assert.match(out.at(-1)!, /\[Done\] 整理周报/);
+  assert.match(out.at(-1)!, /\[done\] 整理周报/);
 });
 
 test("Routing recognizes \"change that task\": hand to that task, task list goes into the prompt", async () => {
@@ -507,9 +507,9 @@ test("Routing recognizes \"change that task\": hand to that task, task list goes
   const t = router.tasks.start({ agent: "dev", title: "周报", prompt: "写周报", hold: true });
   ctl.routeAnswer = JSON.stringify({ action: "task", id: t.id, text: "加上下周计划" });
   await say("Add next week's plan to the weekly report");
-  assert.match(ctl.routePrompts.at(-1)!, new RegExp(`## Background tasks\\n- ${t.id}"周报"dev · To do`));
-  assert.match(out.at(-1)!, /^→ Background task "周报"\n\nUpdated the task content of "周报"/);
-  assert.match(router.tasks.get(t.id)!.prompt, /Addition: 加上下周计划$/);
+  assert.match(ctl.routePrompts.at(-1)!, new RegExp(`## Background tasks\\n- ${t.id} "周报" dev · To do`));
+  assert.match(out.at(-1)!, /^→ background task "周报"/);
+  assert.match(router.tasks.get(t.id)!.prompt, /Additional note: 加上下周计划$/);
 });
 
 test("When judged as background, include done criteria; main chat sees the task count", async () => {
@@ -518,6 +518,6 @@ test("When judged as background, include done criteria; main chat sees the task 
   await say("Help me write the weekly report");
   assert.equal(router.tasks.list()[0].doneWhen, "三段，每段一句");
   router.tasks.start({ agent: "dev", title: "回头", prompt: "p", hold: true });
-  assert.match(router.taskCount(), /1 to-do and scheduled/);
+  assert.match(router.taskCount(), /to do and scheduled 1/);
   assert.equal(router.taskCount("life"), "");
 });

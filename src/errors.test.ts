@@ -12,12 +12,12 @@ test("DeepSeek API key not set: points to the settings page, without a node_modu
 });
 
 test("Another provider not configured: says which one", () => {
-  assert.match(explainError('No API key found for "anthropic"'), /Not signed in to anthropic yet/);
+  assert.match(explainError('No API key found for "anthropic"'), /You're not signed in to anthropic and no API key is set for it/);
 });
 
 test("Wrong API key, insufficient balance", () => {
-  assert.match(explainError("401 Authentication Fails, Your api key: ****abcd is invalid"), /API key is incorrect/);
-  assert.match(explainError("402 Insufficient Balance"), /Insufficient balance/);
+  assert.match(explainError("401 Authentication Fails, Your api key: ****abcd is invalid"), /API key is wrong or has expired/);
+  assert.match(explainError("402 Insufficient Balance"), /balance is too low/);
 });
 
 test("Unrecognized errors are returned as-is", () => {

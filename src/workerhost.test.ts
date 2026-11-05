@@ -107,7 +107,7 @@ test("child process: stopping a task just shuts it down; the in-flight message f
   await new Promise((r) => setTimeout(r, 100));
   assert.equal(w.busy, true);
   await w.kill();
-  await assert.rejects(p, /stopped/);
+  await assert.rejects(p, /Stopped/);
   assert.equal(w.busy, false);
   assert.deepEqual(busy, [true, false]);
 });
@@ -115,7 +115,7 @@ test("child process: stopping a task just shuts it down; the in-flight message f
 test("child process: on an unexpected crash the in-flight message fails, stating the exit code", async () => {
   const w = new Worker(script, init({ path: "/s/c.jsonl" }), hooks());
   await w.ready;
-  await assert.rejects(w.send("crash"), /unexpected exit \(exit code 3\)/);
+  await assert.rejects(w.send("crash"), /exited unexpectedly \(exit code 3\)/);
   assert.equal(w.alive, false);
   await assert.rejects(w.send("again"), /already closed/);
 });

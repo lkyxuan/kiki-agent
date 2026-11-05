@@ -18,7 +18,7 @@ test("Claude Code: start → prompt → wait for approval → resume → done �
   const c = make();
   await c.ingest("claude-code", cc("SessionStart"));
   let s = c.list()[0];
-  assert.equal(s.bao, "kiki"); // folder name matches bot name
+  assert.equal(s.bao, "Kiki"); // folder name matches bot name
   assert.equal(s.status, "idle");
   await c.ingest("claude-code", cc("UserPromptSubmit", { prompt: "Fix the login page\nDetails..." }));
   s = c.list()[0];
@@ -86,9 +86,9 @@ test("After a turn, a small model condenses it to one line; the main chat digest
   await c.ingest("claude-code", cc("Stop", { last_assistant_message: "a very long answer".repeat(30) }));
   await new Promise((r) => setTimeout(r, 10));
   assert.equal(c.list()[0].summary, "Login page fixed, all tests pass");
-  assert.match(c.digest("kiki"), /Claude Code · kiki: turn finished · Fix the login page → Login page fixed/);
+  assert.match(c.digest("Kiki"), /Claude Code · kiki: Turn done · Fix the login page → Login page fixed/);
   assert.equal(c.digest("Life"), "");
-  assert.match(c.briefingLines().done[0], /finished 1 turn in kiki/);
+  assert.match(c.briefingLines().done[0], /finished 1 turn\(s\) in kiki/);
 });
 
 test("Spool written by the hook while Kiki is closed is picked up on startup", async () => {
@@ -134,7 +134,7 @@ test("CoderSetup: local toggles back up files and write the script", () => {
   writeFileSync(join(home, ".claude", "settings.json"), "{}");
   const s = new CoderSetup({ dataDir: data, port: 4567, home });
   assert.deepEqual([s.status().claude.on, s.status().claude.found, s.status().codex.found], [false, true, false]);
-  assert.match(s.set("claude", true), /Connected/);
+  assert.match(s.set("claude", true), /connected/);
   assert.ok(s.status().claude.on);
   assert.ok(existsSync(join(home, ".claude", "settings.json.kiki-bak")));
   assert.match(readFileSync(s.script, "utf8"), /127\.0\.0\.1:4567/);

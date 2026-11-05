@@ -5,7 +5,7 @@ import { describeTool, stepsFromMessages, summarize } from "./activity.js";
 test("tool calls rendered in plain language", () => {
   assert.deepEqual(describeTool("bash", { command: "ls -la\n  /tmp" }), { title: "Run command", detail: "ls -la /tmp" });
   assert.deepEqual(describeTool("read", { path: "/Users/x/Kiki/agents/Kiki/AGENTS.md" }), { title: "Read file", detail: "AGENTS.md" });
-  assert.equal(describeTool("mcp__notion__search", { query: "weekly report" }).title, "Use notion's search");
+  assert.equal(describeTool("mcp__notion__search", { query: "weekly report" }).title, "Use search from notion");
   assert.equal(describeTool("mcp__notion__search", { query: "weekly report" }).detail, "weekly report");
   assert.deepEqual(describeTool("kiki_peek", { target: "Kiki/weekly report" }, { kiki_peek: "Peek at another conversation" }), { title: "Peek at another conversation", detail: "Kiki/weekly report" });
   assert.equal(describeTool("whatever", {}).title, "Use tool whatever");

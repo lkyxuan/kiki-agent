@@ -38,7 +38,7 @@ test("discard conversation: the running one stops, queued messages no longer run
   await new Promise((r) => setImmediate(r));
   await agents.discard("Kiki", p1, "a:b");
   await first;
-  await assert.rejects(second, /discard/);
+  await assert.rejects(second, /deleted/);
   assert.equal(st.prompts, 1);
   assert.equal(st.aborted, 1);
   assert.equal(st.disposed, 1);

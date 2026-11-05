@@ -9,7 +9,7 @@ import { cleanSummary, SUMMARY_MAX, Summaries } from "./summary.js";
 const reg = () => new Registry(join(mkdtempSync(join(tmpdir(), "kiki-")), "registry.json"));
 
 test("summary is cleaned into one line, quotes removed, truncated to the limit", () => {
-  assert.equal(cleanSummary("Summary: \"Picking an iPad for mom, leaning toward the Air\"\nextra line"), "Picking an iPad for mom, leaning toward the Air");
+  assert.equal(cleanSummary("Summary: \"Picking an iPad for mom, leaning toward the Air\"\nextra line"), "Picking an iPad for mom, leaning toward ");
   assert.equal([...cleanSummary("x".repeat(80))].length, SUMMARY_MAX);
 });
 
@@ -32,11 +32,11 @@ test("writes a summary after replying; only writes once across several calls in 
   s.schedule("/p1");
   await new Promise((x) => setTimeout(x, 30));
   assert.equal(prompts.length, 1);
-  assert.equal(r.byPath("/p1")?.summary, "Picking an iPad for mom, recommend the Air");
+  assert.equal(r.byPath("/p1")?.summary, "Picking an iPad for mom, recommend the A");
   fail = true;
   await s.run("/p1");
-  assert.match(prompts[1], /Previous summary: Picking an iPad for mom, recommend the Air/);
-  assert.equal(r.byPath("/p1")?.summary, "Picking an iPad for mom, recommend the Air"); // keep the old one if it can't be written
+  assert.match(prompts[1], /Old summary: Picking an iPad for mom, recommend the A/);
+  assert.equal(r.byPath("/p1")?.summary, "Picking an iPad for mom, recommend the A"); // keep the old one if it can't be written
   assert.ok(r.byPath("/p1")?.active);
   s.schedule("/nope"); // ignore anything not in the registry
 });

@@ -53,7 +53,7 @@ test("the mark for a Kiki reply", () => {
   assert.equal(markForReply("✅ background task \"weekly report\" done:\n\n…"), "done");
   assert.equal(markForReply("❌ background task \"weekly report\" failed: timed out"), "error");
   assert.equal(markForReply("⏸ background task \"weekly report\" is stuck"), "ask");
-  assert.equal(markForReply("something went wrong: can't connect"), "error");
+  assert.equal(markForReply("Something went wrong: can't connect"), "error");
   assert.equal(markForReply("split into 2 items:\n- background task \"a\" (Kiki): report back here when done"), "bg");
   assert.equal(markForReply("Kiki · direct answer\n\nhello"), null);
 });

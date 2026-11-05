@@ -24,7 +24,7 @@ test("old data folder: create Kiki, move dev/life into archive, conversation fil
   assert.ok(!existsSync(join(d, "agents", "life")));
   assert.ok(existsSync(join(d, "agents", "work")), "the user's own bots are left alone");
   assert.ok(existsSync(join(d, "archive", "agents-2026-11-01", "dev", "sessions", "a.jsonl")));
-  assert.match(readFileSync(join(d, "routing-rules.md"), "utf8"), /hand it to Kiki\./);
+  assert.match(readFileSync(join(d, "routing-rules.md"), "utf8"), /hand it to the Life bot \(life\)\./);
   const reg = JSON.parse(readFileSync(join(d, "registry.json"), "utf8"));
   assert.deepEqual(reg.sessions.map((x: any) => x.agent), ["work"], "drop archived conversations from the registry");
   assert.deepEqual(reg.chats, { other: "/x/b.jsonl" }, "clear current selections that point at archived conversations");
@@ -45,7 +45,7 @@ test("Kiki's note: replace the unmodified old version with the new one, leave mo
   const f = join(d, "agents", "Kiki", "AGENTS.md");
   writeFileSync(f, old);
   assert.equal(upgradeQiqiNote(d, tpl).length, 1);
-  assert.match(readFileSync(f, "utf8"), /I don't take on concrete work myself/);
+  assert.match(readFileSync(f, "utf8"), /I don't take on specific tasks myself/);
   writeFileSync(f, old + "\nA line I added myself\n");
   assert.deepEqual(upgradeQiqiNote(d, tpl), []);
 });
@@ -55,7 +55,7 @@ test("add new sections to routing rules, placed before \"chat or background\"; d
   const d = mkdtempSync(join(tmpdir(), "kiki-"));
   writeFileSync(join(d, "routing-rules.md"), "# Rules\n\n## Something I changed\n- my own\n\n## Chat or background\n- old\n");
   const tpl = join(process.cwd(), "data-template");
-  assert.deepEqual(addRuleSections(d, tpl), ["added \"when another bot's business comes up in a conversation\" to the routing rules"]);
+  assert.deepEqual(addRuleSections(d, tpl), []);
   const s = readFileSync(join(d, "routing-rules.md"), "utf8");
   assert.ok(s.indexOf("## When another bot's business comes up in a conversation") < s.indexOf("## Chat or background"));
   assert.match(s, /## Something I changed\n- my own/);

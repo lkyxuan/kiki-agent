@@ -55,7 +55,7 @@ test("check for updates: new version found; dev mode cannot install by itself", 
     assert.equal(s.current, VERSION);
     assert.equal(s.latest, "99.0.0");
     assert.equal(s.status, "available");
-    if (!process.env.KIKI_APP) await assert.rejects(u.apply(), /dev mode/);
+    if (!process.env.KIKI_APP) await assert.rejects(u.apply(), /Dev mode/);
   } finally {
     server.close();
   }
@@ -70,7 +70,7 @@ test("clicking update while already installing: returns progress, doesn't report
   const s = await u.apply();
   assert.equal(s.status, "downloading");
   u.state.status = "idle";
-  await assert.rejects(() => u.apply(), /nothing to install/);
+  await assert.rejects(() => u.apply(), /no new version to install/);
 });
 
 test("read team ID from codesign output: local signing has no team", () => {

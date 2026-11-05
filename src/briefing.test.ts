@@ -25,13 +25,13 @@ test("briefing: waiting on you, failed, done, due today, listed in sections; any
     now,
     { approvals: 2 },
   );
-  assert.match(text, /^☀️ Good morning, today is Tuesday, November 3\./);
-  assert.match(text, /\*\*Waiting on you\*\* \(2\)\n- Book flight: Window or aisle\? \(\/answer Book flight your answer\)\n- Plus 2 cards waiting for your approval/);
+  assert.match(text, /^☀️ Good morning, today is Tue, November 3\./);
+  assert.match(text, /\*\*Waiting on you\*\* \(2\)\n- Book flight: Window or aisle\? \(\/answer Book flight your answer\)\n- 2 more cards waiting on your approval/);
   assert.match(text, /\*\*Didn't get done\*\* \(1\)\n- Scrape data: Website won't open → \/retry Scrape data/);
   assert.match(text, /\*\*Done since yesterday\*\* \(1\)\n- Write weekly report · dev/);
-  assert.match(text, /\*\*Due today\*\* \(2\)\n- In progress: Run tests · dev\n- 10:00 Tidy inbox · dev \(weekdays 10:00\)/);
+  assert.match(text, /\*\*To do today\*\* \(2\)\n- In progress: Run tests · dev\n- today 10:00 Tidy inbox · dev \(weekdays 10:00\)/);
   assert.match(text, /\*\*Still watching\*\* \(1\)\n- Sign up: waiting for review result/);
-  assert.match(text, /Also 1 item noted in the to-do list/);
+  assert.match(text, /Also, 1 item is saved in your to-dos, waiting for you to start/);
   assert.doesNotMatch(text, /Old task|Tomorrow's thing|Daily briefing ·/);
 });
 
@@ -46,7 +46,7 @@ test("daily briefing card: first time creates a scheduled task at 08:30 every da
   const tasks = new Tasks(new MemoryTaskStore(), backend, { now: () => new Date(t) });
   tasks.registerExecutor(BRIEFING, { run: async () => briefing(tasks.list(), new Date(t)) });
   const tpl = ensureBriefing(tasks, { agent: "Kiki" })!;
-  assert.equal(tpl.repeat, "every day 08:30");
+  assert.equal(tpl.repeat, "daily 08:30");
   assert.equal(tpl.status, "todo");
   assert.equal(new Date(tpl.when!).getHours(), 8);
   assert.equal(ensureBriefing(tasks, { agent: "Kiki" }), undefined);
