@@ -1,1 +1,7 @@
-Initial public release
+English sync: make English tests line up
+
+- Strip wrapper tags the model echoes back, and save translations even when self-checks fail; the token needs Workflows permission
+- Also strip wrapper lines when followed by a blank line
+- Translate tests last with English source references, auto-fix string mismatches in failing tests, and only warn on leftover Chinese
+- Use explicit TAP output when fixing tests, since Node 24 no longer defaults to TAP
+- When fixing tests, include the Chinese source so source files can be corrected even when they disagree, up to 5 rounds

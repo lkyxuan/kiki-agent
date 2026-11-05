@@ -375,7 +375,7 @@ const run = this.runs.get(path);
   }
 
   private async get(agent: string, path: string): Promise<AgentSession> {
-    if (this.gone.has(path)) throw new Error("This conversation has been deleted");
+    if (this.gone.has(path)) throw new Error("This conversation has been discarded");
     if (this.remote.has(path)) throw new Error("This conversation is running in a background subprocess"); // only one process may write to a given file
     let s = this.live.get(path);
     if (!s) {
@@ -551,7 +551,7 @@ const run = this.runs.get(path);
     if (!this.isolation) return this.send(agent, path, text);
     const prev = this.queues.get(path) ?? Promise.resolve();
     const run: Promise<string> = prev.catch(() => {}).then(async () => {
-      if (this.gone.has(path)) throw new Error("This conversation has been deleted");
+      if (this.gone.has(path)) throw new Error("This conversation has been discarded");
       if (!this.remote.has(path)) {
         // If this conversation is open in the main process (e.g. the user opened and chatted in it), release it first; only one process may write to a given file
         this.live.get(path)?.dispose();

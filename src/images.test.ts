@@ -33,7 +33,7 @@ test("rejects everything else", () => {
 test("the text note attached when images can't be viewed", () => {
   const note = imageNote([{ name: "a".repeat(32) + ".png", text: "a cat" }], "GPT-6 Luna");
   assert.match(note, /^\n\n<kiki-image-note>\n/);
-  assert.match(note, /What GPT-6 Luna saw:\na cat/);
+  assert.match(note, /what GPT-6 Luna saw:\na cat/);
   assert.match(note, /kiki_look/);
   assert.deepEqual(imageNames("x ![image](/api/image/" + "b".repeat(32) + ".jpg) ![image](/api/image/" + "b".repeat(32) + ".jpg)"), ["b".repeat(32) + ".jpg"]);
 });

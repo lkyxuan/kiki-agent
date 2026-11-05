@@ -191,7 +191,7 @@ export class Mcp {
       // Not configured yet, or configured with a bare command name (not found on the background PATH), or the path is stale: find the full path
       if (!cur || !cmd.includes("/") || !existsSync(cmd)) {
         const path = find(p.bin, p.dirs);
-        if (!path) throw new Error(`${name} is not installed. Run this in Terminal: ${p.install}`);
+        if (!path) throw new Error(`${name} is not installed yet. Run this in Terminal: ${p.install}`);
         // For existing configs only replace command; keep everything else (args, env, etc.) as-is
         j.mcpServers[name] = cur ? { ...cur, command: path } : { command: path, args: p.args, exposure: "direct", description: p.desc };
       }

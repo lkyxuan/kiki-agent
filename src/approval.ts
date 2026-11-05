@@ -153,7 +153,7 @@ export const modeOf = (s: State, c: Category): Mode => s.modes[c] ?? "allow";
 
 export function setMode(dataDir: string, category: string, mode: string) {
   if (!CATEGORIES.some((c) => c.id === category)) throw new Error(`No such action category ${category}`);
-  if (mode !== "allow" && mode !== "ask" && mode !== "deny") throw new Error(`Unknown mode ${mode}`);
+  if (mode !== "allow" && mode !== "ask" && mode !== "deny") throw new Error(`unrecognized mode ${mode}`);
   const s = readState(dataDir);
   s.modes[category as Category] = mode;
   writeState(dataDir, s);

@@ -42,7 +42,7 @@ export function describeTool(name: string, args: any, labels: Record<string, str
   let title = labels[name] ?? BUILTIN[name];
   if (!title) {
     const mcp = name.match(/^mcp__(.+?)__(.+)$/);
-    title = mcp ? `Use ${mcp[2]} from ${mcp[1]}` : `Use tool ${name}`;
+    title = mcp ? `Use ${mcp[1]}'s ${mcp[2]}` : `Use tool ${name}`;
   }
   let detail = "";
   switch (name) {

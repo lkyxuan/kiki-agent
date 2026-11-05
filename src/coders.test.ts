@@ -48,7 +48,7 @@ test("Codex: a single notify carries both the prompt and the result", async () =
   assert.equal(s.tool, "codex");
   assert.equal(s.title, "Book a hotel in Tokyo");
   assert.equal(s.status, "idle");
-  assert.equal(s.bao, "Kiki"); // no match, and no model either: goes to the default bot
+  assert.equal(s.bao, "kiki"); // no match, and no model either: goes to the default bot
   assert.match(resumeCommand(s), /^cd \/x\/trip-plan && codex resume t1$|^cd '\/x\/trip-plan' && codex resume t1$/);
 });
 
@@ -86,7 +86,7 @@ test("After a turn, a small model condenses it to one line; the main chat digest
   await c.ingest("claude-code", cc("Stop", { last_assistant_message: "a very long answer".repeat(30) }));
   await new Promise((r) => setTimeout(r, 10));
   assert.equal(c.list()[0].summary, "Login page fixed, all tests pass");
-  assert.match(c.digest("kiki"), /Claude Code · kiki: turn finished · Fix the login page → Login page fixed/);
+  assert.match(c.digest("Kiki"), /Claude Code · kiki: Turn done · Fix the login page → Login page fixed, all tests pass/);
   assert.equal(c.digest("Life"), "");
   assert.match(c.briefingLines().done[0], /finished 1 turn in kiki/);
 });
@@ -134,7 +134,7 @@ test("CoderSetup: local toggles back up files and write the script", () => {
   writeFileSync(join(home, ".claude", "settings.json"), "{}");
   const s = new CoderSetup({ dataDir: data, port: 4567, home });
   assert.deepEqual([s.status().claude.on, s.status().claude.found, s.status().codex.found], [false, true, false]);
-  assert.match(s.set("claude", true), /Connected/);
+  assert.match(s.set("claude", true), /connected/);
   assert.ok(s.status().claude.on);
   assert.ok(existsSync(join(home, ".claude", "settings.json.kiki-bak")));
   assert.match(readFileSync(s.script, "utf8"), /127\.0\.0\.1:4567/);

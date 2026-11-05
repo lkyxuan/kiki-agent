@@ -116,7 +116,7 @@ export function markForReply(text: string): Mark | null | undefined {
   if (head.startsWith("✅ background task")) return "done";
   if (head.startsWith("❌ background task")) return "error";
   if (head.startsWith("⏸ background task")) return "ask";
-  if (head.startsWith("Something went wrong")) return "error";
+  if (head.startsWith("something went wrong:")) return "error";
   // split into pieces: if any went to the background, attach ⏳; otherwise each piece's answer is in its own conversation, and Kiki's side counts as received
   if (/^- background task "/m.test(text)) return "bg";
   return null;

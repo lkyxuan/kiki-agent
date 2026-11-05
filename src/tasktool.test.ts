@@ -23,12 +23,12 @@ function setup() {
 test("kiki_task: scheduled, repeating, waiting, and just noting it down", async () => {
   const { tasks, task, call } = setup();
   let r = await call(task, { title: "Remind me to buy groceries", prompt: "Remind me to buy groceries", when: "tomorrow 18:00" });
-  assert.match(r.text, /Noted "Remind me to buy groceries" \(dev\): starts tomorrow 18:00/);
+  assert.match(r.text, /Recorded "Remind me to buy groceries" \(dev\): starts tomorrow 18:00/);
   r = await call(task, { title: "Morning report", prompt: "Put together the morning report", repeat: "weekdays 09:00", bao: "life" });
-  assert.match(r.text, /Scheduled task, weekdays 09:00, first run tomorrow 09:00/);
+  assert.match(r.text, /scheduled task, weekdays 09:00, first run tomorrow 09:00/);
   const first = tasks.list()[0];
   r = await call(task, { title: "Follow-up", prompt: "p", after: first.id });
-  assert.match(r.text, /Will start after task "Remind me to buy groceries" finishes/);
+  assert.match(r.text, /starts after task "Remind me to buy groceries" finishes/);
   r = await call(task, { title: "Later", prompt: "p", hold: true });
   assert.match(r.text, /Added to your to-dos, waiting for you to hit start/);
   assert.ok(tasks.list().every((t) => t.status === "todo" && t.reportTo === "/from.jsonl"));
@@ -74,7 +74,7 @@ test("kiki_watch: only used inside background tasks; records to the watchlist an
   assert.equal((await call({ about: "a", match: "m" }, "/chat.jsonl")).err, true);
   const t = tasks.start({ agent: "dev", title: "Sign-up", prompt: "p" });
   await new Promise((r) => setTimeout(r, 10));
-  assert.match((await call({ about: "a", match: "m" }, "/bg.jsonl")).text, /not connected yet/);
+  assert.match((await call({ about: "a", match: "m" }, "/bg.jsonl")).text, /isn't connected yet/);
   on = true;
   const r = await call({ about: "Waiting on the review result; submit materials once approved", match: "sender: Project X" }, "/bg.jsonl");
   assert.match(r.text, /Added to the watchlist/);

@@ -121,7 +121,7 @@ test("timeout: stop the conversation, mark as failed", async () => {
   const t = tasks.start({ agent: "dev", title: "Slow", prompt: "p" });
   await tick(50);
   assert.equal(t.status, "failed");
-  assert.match(t.result!, /didn't finish, stopped/);
+  assert.match(t.result!, /Didn't finish within 0 minutes, stopped/);
   assert.deepEqual(aborted, [t.session]);
 });
 
@@ -217,7 +217,7 @@ test("repeat: the scheduled task stays in the to-do list, each due time spawns a
 
 test("an unrecognized repeat rule throws", () => {
   const tasks = new Tasks(new MemoryTaskStore(), fakeBackend().backend);
-  assert.throws(() => tasks.start({ agent: "dev", title: "x", prompt: "p", repeat: "occasionally" }), /Unrecognized repeat rule/);
+  assert.throws(() => tasks.start({ agent: "dev", title: "x", prompt: "p", repeat: "occasionally" }), /Could not understand repeat rule/);
 });
 
 test("wait for A to finish before B; if A fails, B is marked failed", async () => {
@@ -241,7 +241,7 @@ test("wait for A to finish before B; if A fails, B is marked failed", async () =
   fails[2](new Error("broke"));
   await tick();
   assert.equal(d.status, "failed");
-  assert.match(d.result!, /the task it was waiting on, "C", failed/);
+  assert.match(d.result!, /The task it was waiting on, "C", Failed/);
   // retry D: no longer waits on C
   const d2 = tasks.retry(d.id)!;
   assert.equal(d2.after, undefined);
@@ -377,7 +377,7 @@ test("done criteria are written to file and appended to the task when handed to 
   const tasks = new Tasks(new MemoryTaskStore(), backend);
   const t = tasks.start({ agent: "dev", title: "x", prompt: "write the weekly report", doneWhen: "list 3 things you finished" });
   await tick();
-  assert.match(sent[0], /^write the weekly report\n\nDone when: list 3 things you finished\n/);
+  assert.match(sent[0], /^write the weekly report\n\nCompletion criteria: list 3 things you finished\n/);
   assert.equal(parseTask(formatTask(t))?.doneWhen, "list 3 things you finished");
 });
 
@@ -407,8 +407,8 @@ test("revise a task: a queued one gets its content changed, a running one gets a
   const a = tasks.start({ agent: "dev", title: "A", prompt: "A", origin: "/o.jsonl" });
   const b = tasks.start({ agent: "dev", title: "B", prompt: "B" });
   await tick();
-  assert.match(tasks.revise(b.id, "also write a conclusion")!, /revised/);
-  assert.match(tasks.revise(a.id, "hurry up")!, /steered/);
+  assert.match(tasks.revise(b.id, "also write a conclusion")!, /Updated the task content/);
+  assert.match(tasks.revise(a.id, "hurry up")!, /Interjected/);
   assert.deepEqual(steered, [`${a.session} hurry up`]);
   gates.shift()!();
   await tick();
@@ -434,7 +434,7 @@ test("external executor: handed to a registered executor, fails if it can't conn
   assert.equal(t.result, "grok finished: look up A2A");
   assert.equal(t.session, undefined);
   assert.equal(u.status, "failed");
-  assert.match(u.result!, /no executor named "nonexistent"/);
+  assert.match(u.result!, /No executor named "nonexistent"/);
 });
 
 test("external executor: looked up by name on the fly; stopping the task aborts the signal and marks it cancelled", async () => {
@@ -468,11 +468,11 @@ test("new message on a watched item: go back to the original conversation and co
   const session = t.session!;
   tasks.setWatching(t.id, "waiting for the organizer's review result");
   assert.equal(tasks.bySession(session)?.id, t.id);
-  assert.equal(tasks.followUp(t.id, "email: review passed, please submit materials by 11/10"), "continued in the original conversation");
+  assert.equal(tasks.followUp(t.id, "email: review passed, please submit materials by 11/10"), "Back in the original conversation, continuing the work");
   await tick();
   assert.equal(t.status, "done");
   assert.equal(t.session, session);
-  assert.match(sent[1], /there's a new message on the thing you're watching (waiting for the organizer's review result):\n\nemail: review passed/);
+  assert.match(sent[1], /There's new news about what you're watching (waiting for the organizer's review result):\n\nemail: review passed/);
   assert.equal(notes.length, 2, "reports back after finishing");
   assert.equal(t.watching, "waiting for the organizer's review result", "still watching, until the agent says it's no longer needed");
   assert.equal(tasks.followUp("nonexistent", "new message"), undefined);
@@ -518,6 +518,6 @@ test("revising again while queued for rework: both messages go to the original c
   tasks.revise(a.id, "also add next week's plan");
   hold();
   await tick(50);
-  assert.equal(sent.at(-1), "Rework: add a table\n\nAddition: also add next week's plan");
+  assert.equal(sent.at(-1), "Rework: add a table\n\nAdditional note: also add next week's plan");
   assert.equal(a.prompt, "write the weekly report");
 });

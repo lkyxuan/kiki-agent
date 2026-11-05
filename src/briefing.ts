@@ -66,7 +66,7 @@ export function ensureBriefing(tasks: Tasks, opts: { agent: string; at?: string 
     agent: opts.agent,
     title: "Daily briefing",
     prompt: "Every morning, summarize: what got done since yesterday, what didn't, what's waiting on you, and what's planned for today.",
-    repeat: `daily ${opts.at || "08:30"}`,
+    repeat: `every day at ${opts.at || "08:30"}`,
     executor: BRIEFING,
   });
 }

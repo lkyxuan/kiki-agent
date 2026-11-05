@@ -202,6 +202,7 @@ const SCRIPT_EXT = /\.(sh|bash|zsh|py|js|mjs|cjs|ts|rb|pl|php|ps1|applescript|sc
 const ABILITY_RES: [RegExp, string][] = [
   [/\b(curl|wget|fetch\(|axios|requests\.(get|post)|https?:\/\/)/i, "go online"],
   [/(发消息|发邮件|发送|回复邮件|send[_ ]?(message|email|mail)|smtp|telegram|微信|whatsapp|slack|discord|twitter|推特|\bx\.com)/i, "send messages for you"],
+  [/(不要|别|勿)(告诉|通知|让)(用户|你的主人|主人)|without (telling|notifying|asking) the user|do not (tell|inform|notify) the user/i, "tells Kiki to do things behind your back"],
   [/(付款|支付|转账|下单|购买|充值|\bpay(ment)?\b|stripe|checkout|purchase|wallet|钱包)/i, "spend money / pay"],
   [/(\brm\s+-[a-z]*r|删除|delete|unlink|drop\s+table|trash)/i, "delete things"],
   [/(~\/|\/Users\/|\$HOME|钥匙串|keychain|\.ssh|\.env\b)/i, "read/write files on your Mac outside the bot folder"],
@@ -211,7 +212,6 @@ const ABILITY_RES: [RegExp, string][] = [
 
 const RED_RES: [RegExp, string][] = [
   [/(ignore (all |any )?(previous|prior|above) (instructions|prompts)|忽略(之前|前面|以上)(的)?(所有)?(指令|规则|说明))/i, "contains phrases like \"ignore previous instructions\", common in malicious skills"],
-  [/(不要|别|勿)(告诉|通知|让)(用户|你的主人|主人)|without (telling|notifying|asking) the user|do not (tell|inform|notify) the user/i, "tells Kiki to do things behind your back"],
   [/(curl|wget)[^\n|]*\|\s*(ba|z)?sh\b/i, "downloads a script from the internet and runs it directly"],
   [/base64\s+(-d|--decode)|eval\s*\(\s*(atob|Buffer\.from)/i, "has code that's decoded then executed, can't tell what it really does"],
   [/(上传|发送|发给|upload|send|post|curl)[^\n]{0,60}(\.ssh\/|\.env\b|auth\.json|钥匙串|keychain|id_rsa)/i, "sends key files from your Mac out"],
@@ -441,7 +441,7 @@ export function baoShareApi(opts: { dataDir: string; onInstalled?: (name: string
       // On preview, hand back the normalized bundle as-is; on install, the web page sends it back: what gets installed is exactly what you looked at,
       // and it won't re-fetch from GitHub after the preview (if it changed in between, you'd install something else)
       if (!body.install) return json({ preview: previewBundle(bundle, list()), text: JSON.stringify(bundle) });
-      if (typeof body.text !== "string") return json({ error: "You need to preview it before installing" }, 400);
+      if (typeof body.text !== "string") return json({ error: "You need to take a look before installing" }, 400);
       try {
         const name = installBundle(opts.dataDir, bundle, String(body.name ?? "").trim());
         opts.onInstalled?.(name);

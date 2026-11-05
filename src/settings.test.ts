@@ -33,7 +33,7 @@ test("sourceOf distinguishes .env, op references, and external injection", () =>
 
 test("validName blocks path traversal", () => {
   assert.ok(validName("dev"));
-  assert.ok(validName("Life bot"));
+  assert.ok(validName("Life_bot"));
   assert.ok(!validName("../x"));
   assert.ok(!validName("a/b"));
   assert.ok(!validName(""));

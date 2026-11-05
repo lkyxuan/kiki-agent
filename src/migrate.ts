@@ -48,7 +48,7 @@ export function migrateToQiqi(dataDir: string, templateDir: string, now = new Da
   const rules = join(dataDir, "routing-rules.md");
   if (existsSync(rules)) {
     const src = readFileSync(rules, "utf8");
-    const next = src.replace("hand off to Life bot (life)", `hand off to ${DEFAULT_BAO}`);
+    const next = src.replace("hand it off to Life bot (life)", `hand it off to ${DEFAULT_BAO}`);
     if (next !== src) {
       writeFileSync(rules, next);
       done.push("Changed the default destination in the routing rules to Kiki");
