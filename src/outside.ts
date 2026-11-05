@@ -12,7 +12,7 @@ export interface TurnInfo {
   userText: string;
 }
 
-const EXTERNAL_MARK = /【Mailroom】|📮 external agent|there's news about something you're watching|this was sent by an external agent/;
+const EXTERNAL_MARK = /\[Mailroom\]|【Mailroom】|📮 external agent|there's news about something you're watching|this was sent by an external agent/;
 /** Local tools: reading and writing local files, passing messages between Kiki's own conversations; not external content */
 const LOCAL_TOOLS = new Set(["read", "write", "edit", "ls", "grep", "find", "bash", "powershell"]);
 const isExternalTool = (name: string) => !!name && !LOCAL_TOOLS.has(name) && (!name.startsWith("kiki_") || name === "kiki_outside");

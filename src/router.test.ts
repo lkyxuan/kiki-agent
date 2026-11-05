@@ -187,10 +187,10 @@ test("/bg forces background (forks the current conversation), /tasks lists, /ret
   assert.match(out.at(-1)!, /^\[Done\] tidy up the READ · dev · /);
   const id = router.tasks.list()[0].id;
   await say(`/retry ${id}`);
-  assert.match(out.at(-1)!, /restarted/);
+  assert.match(out.at(-1)!, /starting over/);
   await new Promise((r) => setTimeout(r, 10));
   assert.equal(router.tasks.list().length, 2);
-  assert.ok(reg.get("dev", "bg-tidy up the README2"), "a rerun opens a new background conversation, not mixed with the old one");
+  assert.ok(reg.get("dev", "bg-tidy up the READ2"), "a rerun opens a new background conversation, not mixed with the old one");
 });
 
 test("/new /use /list manual commands still work as usual", async () => {
@@ -349,8 +349,8 @@ test("One message split into several items: one goes into an existing thread, on
   ctl.routeAnswer = JSON.stringify({
     action: "split",
     parts: [
-      { action: "continue", target: "dev/路由器", mode: "chat", text: "路由要支持拆分" },
-      { action: "new", agent: "生活宝", newBao: "日常生活", name: "选iPad", mode: "chat", text: "给妈妈选 iPad，预算 3000" },
+      { action: "continue", target: "dev/Router", mode: "chat", text: "Routing needs to support splitting" },
+      { action: "new", agent: "生活宝", newBao: "日常生活", name: "选iPad", mode: "chat", text: "Pick an iPad for my mom, budget 3000" },
       { action: "new", agent: "瞎编", name: "x", mode: "chat", text: "不合法，丢掉" },
     ],
   });
@@ -358,10 +358,10 @@ test("One message split into several items: one goes into an existing thread, on
   await new Promise((r) => setTimeout(r, 10));
   assert.equal(
     out.at(-1),
-    "→ 生活宝/main chat · created bot\n\n[/fake/生活宝/4.jsonl] Routing needs to support splitting; also help me pick an iPad for my mom, budget 3000",
+    "Kiki · split into 2 items, dispatched separately\n\n- [Router](kiki:dev/Router): continued\n- [生活宝](kiki:生活宝/main chat): created bot",
   );
   assert.deepEqual(ctl.duties, ["生活宝:日常生活"]);
-  assert.deepEqual(ctl.sends.slice(-2).sort(), ["给妈妈选 iPad，预算 3000", "路由要支持拆分"]);
+  assert.deepEqual(ctl.sends.slice(-2).sort(), ["Pick an iPad for my mom, budget 3000", "Routing needs to support splitting"]);
   assert.equal(ctl.announced.length, 2);
   assert.equal(reg.current("app")?.name, "Router");
 });
@@ -493,13 +493,13 @@ test("Background task stuck: inbox explains where it's stuck, /answer finishes i
   };
   await say("/bg 整理周报");
   await new Promise((r) => setTimeout(r, 10));
-  assert.match(out.at(-1)!, /⏸ Background task "整理周报" is missing something and is waiting on you.*\n\nWhich project should I focus on?\n\n.*\/answer /s);
+  assert.match(out.at(-1)!, /⏸ Background task "整理周报" is missing something and is waiting on you.*\n\nWhich project should I focus on\?\n\n.*\/answer /s);
   const id = router.tasks.list()[0].id;
   await say(`/answer ${id} Kiki`);
   await new Promise((r) => setTimeout(r, 10));
   assert.match(out.at(-1)!, /✅ Background task "整理周报" finished/);
   await say("/tasks");
-  assert.match(out.at(-1)!, /\[done\] 整理周报/);
+  assert.match(out.at(-1)!, /\[Done\] 整理周报/);
 });
 
 test("Routing recognizes \"change that task\": hand to that task, task list goes into the prompt", async () => {

@@ -73,7 +73,7 @@ export function nextRun(repeat: string, after = new Date()): Date | undefined {
     d.setHours(d.getHours() + 1);
     return d;
   }
-  let m = s.match(/^(every day|weekdays?)\s*(.*)$/i);
+  let m = s.match(/^(every day|daily|weekdays?)\s*(.*)$/i);
   if (m) {
     const t = hm(m[2] || undefined);
     if (!t) return undefined;

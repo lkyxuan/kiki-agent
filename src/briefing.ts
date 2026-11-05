@@ -1,5 +1,5 @@
 // Daily briefing: every morning Kiki posts one message in the main chat — what got done since yesterday, what didn't, what's waiting on you, and what's planned for today.
-// It's just a scheduled task: a "daily 08:30" task card whose executor is Kiki itself (briefing),
+// It's just a scheduled task: a "every day 08:30" task card whose executor is Kiki itself (briefing),
 // with the content computed straight from the task ledger — no model call, so it's fast and never makes things up. If the user cancels this card on the board it stops sending, and it won't be recreated on restart.
 import { showTime } from "./schedule.js";
 import type { Task, Tasks } from "./tasks.js";
@@ -66,7 +66,7 @@ export function ensureBriefing(tasks: Tasks, opts: { agent: string; at?: string 
     agent: opts.agent,
     title: "Daily briefing",
     prompt: "Every morning, summarize: what got done since yesterday, what didn't, what's waiting on you, and what's planned for today.",
-    repeat: `daily ${opts.at || "08:30"}`,
+    repeat: `every day ${opts.at || "08:30"}`,
     executor: BRIEFING,
   });
 }

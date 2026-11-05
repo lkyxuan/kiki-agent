@@ -189,7 +189,7 @@ test("delete: can't tell what's being deleted or can't back it up first, don't d
   const r = await call("bash", { command: "find ~ -name '*.log' -delete" }, join(dir, "agents", "dev"));
   assert.equal(r.block, true);
   assert.match(r!.reason, /can't be backed up first/);
-  assert.match(r!.reason, /tell the user/);
+  assert.match(r!.reason, /Couldn't tell/);
   assert.match(r!.reason, /do not stop to ask the user/);
   assert.equal(ap.list().length, 0);
   const d = await call("bash", { command: "dd if=/dev/zero of=/dev/disk2" }, join(dir, "agents", "dev"));

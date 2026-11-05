@@ -419,7 +419,7 @@ test("revise a task: a queued one gets its content changed, a running one gets a
   await tick();
   assert.equal(a.status, "done");
   assert.equal(a.session, session);
-  assert.equal(a.result, "done: rework: add one more table");
+  assert.equal(a.result, "done: Rework: add one more table");
   assert.equal(notes.length, 2, "reports back again after rework");
 });
 
@@ -472,7 +472,7 @@ test("new message on a watched item: go back to the original conversation and co
   await tick();
   assert.equal(t.status, "done");
   assert.equal(t.session, session);
-  assert.match(sent[1], /There's new news about what you're watching (waiting for the organizer's review result):\n\nemail: review passed, please submit materials by 11\/10/);
+  assert.match(sent[1], /There's new news about what you're watching \(waiting for the organizer's review result\):\n\nemail: review passed, please submit materials by 11\/10/);
   assert.equal(notes.length, 2, "reports back after finishing");
   assert.equal(t.watching, "waiting for the organizer's review result", "still watching, until the agent says it's no longer needed");
   assert.equal(tasks.followUp("nonexistent", "new message"), undefined);

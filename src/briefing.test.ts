@@ -46,7 +46,7 @@ test("daily briefing card: first time creates a scheduled task at 08:30 every da
   const tasks = new Tasks(new MemoryTaskStore(), backend, { now: () => new Date(t) });
   tasks.registerExecutor(BRIEFING, { run: async () => briefing(tasks.list(), new Date(t)) });
   const tpl = ensureBriefing(tasks, { agent: "Kiki" })!;
-  assert.equal(tpl.repeat, "daily 08:30");
+  assert.equal(tpl.repeat, "every day 08:30");
   assert.equal(tpl.status, "todo");
   assert.equal(new Date(tpl.when!).getHours(), 8);
   assert.equal(ensureBriefing(tasks, { agent: "Kiki" }), undefined);
