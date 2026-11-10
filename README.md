@@ -2,20 +2,34 @@
 
 **English** · [简体中文](https://github.com/lkyxuan/kiki/blob/main/README.md)
 
-<a href="https://getkiki.ai"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-hero.png" alt="Kiki. Your personal AI team." width="100%"></a>
+<br>
 
-<h3>Your personal AI team. Runs on your Mac.</h3>
+<a href="https://getkiki.ai"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/kiki-sticker.svg" alt="Kiki" width="96"></a>
+
+<h1>Stick eyes on it. It gets to work.</h1>
+
+<p><b>Kiki is your personal AI team on Mac.</b><br>
+Hand it a goal. It breaks the work down, assigns the right agents and follows up.</p>
 
 <p>
-  <a href="https://github.com/lkyxuan/kiki/releases/latest"><img src="https://img.shields.io/github/v/release/lkyxuan/kiki?style=flat-square&color=5b6cf0&label=release" alt="Latest release"></a>
-  <img src="https://img.shields.io/badge/macOS-13.5%2B-000000?style=flat-square&logo=apple&logoColor=white" alt="macOS 13.5+">
-  <img src="https://img.shields.io/badge/arch-arm64%20%7C%20x64-5b6cf0?style=flat-square" alt="arm64 | x64">
-  <img src="https://img.shields.io/badge/data-local%20Markdown%20%2B%20JSONL-1d1e26?style=flat-square" alt="Local Markdown + JSONL">
-  <img src="https://img.shields.io/badge/BYO-key%20or%20subscription-1d1e26?style=flat-square" alt="Bring your own key or subscription">
-  <img src="https://img.shields.io/badge/status-private%20beta-f5a524?style=flat-square" alt="Private beta">
+  <a href="https://dl.kikibao.com/latest/Kiki-mac-arm64.dmg"><img src="https://img.shields.io/badge/Download_for_Mac-ffd166?style=for-the-badge&logo=apple&logoColor=111111&labelColor=ffd166" alt="Download for Mac" height="34"></a>
+  <a href="https://dl.kikibao.com/latest/Kiki-mac-x64.dmg"><img src="https://img.shields.io/badge/Intel_version-ffffff?style=for-the-badge&logo=apple&logoColor=111111&labelColor=ffffff" alt="Intel version" height="34"></a>
 </p>
 
-[Install](#-install) · [How it works](#-how-it-works) · [Engines](#-engines) · [Guardrails](#-guardrails) · [FAQ](#-faq) · [getkiki.ai](https://getkiki.ai)
+<p>
+  <a href="https://github.com/lkyxuan/kiki/releases/latest"><img src="https://img.shields.io/github/v/release/lkyxuan/kiki?style=flat-square&color=111111&label=release" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/macOS-13.5%2B-111111?style=flat-square&logo=apple&logoColor=white" alt="macOS 13.5+">
+  <img src="https://img.shields.io/badge/arch-arm64%20%7C%20x64-8fd3ff?style=flat-square" alt="arm64 | x64">
+  <img src="https://img.shields.io/badge/data-local%20files-9be59b?style=flat-square" alt="Local files">
+  <img src="https://img.shields.io/badge/BYO-key%20or%20subscription-ffb27a?style=flat-square" alt="Bring your own key or subscription">
+  <img src="https://img.shields.io/badge/status-private%20beta-ff9ec7?style=flat-square" alt="Private beta">
+</p>
+
+[Install](#-install) · [How it works](#-how-it-works) · [Engines](#-engines) · [Guardrails](#-guardrails) · [FAQ](#-faq) · [getkiki.ai](https://getkiki.ai) · [@getkiki_ai](https://x.com/getkiki_ai)
+
+<br>
+
+<a href="https://getkiki.ai"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-hero.png" alt="getkiki.ai: Stick eyes on it. It gets to work. Kiki's overview with agents, external sessions and what needs you." width="100%"></a>
 
 </div>
 
@@ -45,16 +59,16 @@ kiki:
 you  › Prepare next Wednesday's product launch
 
 kiki › Split into 3 tracks, running in parallel
-       ├─ Design   12-slide keynote deck          ▸ running
-       ├─ Writer   invite + press release         ▸ needs you: "You're invited" or "Join us"?
-       └─ Video    livestream run-of-show         ▸ done ✓
+       ├─ (")  Design   12-slide keynote deck     ▸ running
+       ├─ (")  Writer   invite + press release     ▸ needs you: "You're invited" or "Join us"?
+       └─ (")  Video    livestream run-of-show     ▸ done ✓
 
 you  › Join us
 
-kiki › Writer resumed. I'll report back when the deck is ready.
+kiki › Writer resumed. I'll ping you when the deck is ready.
 ```
 
-Other things people hand it:
+Stick eyes on anything else:
 
 ```text
 › Send me an AI news brief every day at 8
@@ -85,6 +99,8 @@ flowchart LR
 ## 🔩 Engines
 
 Every agent picks its own engine. Kiki always does the routing.
+
+<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-engines.png" alt="Every agent picks its own engine: Kiki engine (default), Claude Code, DeepSeek Harness" width="100%"></p>
 
 | Engine | Status | Use it for |
 |---|---|---|
@@ -121,7 +137,7 @@ Fully automatic by default. Irreversible actions have a net under them.
 | spend money | pays within a monthly budget, pauses and asks once it's hit |
 | force push | creates a backup tag before pushing |
 
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-control.png" alt="Activity log with undo, budget and ask-first per category" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-control.png" alt="You always have the final say: activity log with undo, budget limits, ask-first per category" width="100%"></p>
 
 ## 🔒 Your data
 
@@ -142,10 +158,10 @@ curl -fsSL https://raw.githubusercontent.com/lkyxuan/kiki/main/packaging/install
 Or grab the installer: [**Apple silicon .dmg**](https://dl.kikibao.com/latest/Kiki-mac-arm64.dmg) · [**Intel .dmg**](https://dl.kikibao.com/latest/Kiki-mac-x64.dmg) · [all releases](https://github.com/lkyxuan/kiki/releases)
 
 ```text
-1. install      drag Kiki into Applications, open it from there
-2. invite code  the beta opens in batches; Kiki asks on first launch
-3. add a model  paste a key from any provider, or sign in
-4. give a goal  Kiki handles the rest
+01  install      drag Kiki into Applications, open it from there
+02  invite code  the beta opens in batches; Kiki asks on first launch
+03  add a model  paste a key from any provider, or sign in
+04  give a goal  Kiki handles the rest
 ```
 
 - **Self-updating.** Checks hourly, installs when idle, rolls back automatically if the new version fails to start.
@@ -195,8 +211,13 @@ The beta opens in batches. Enter your code the first time you open Kiki.
 
 ## 💬 Feedback
 
-Bugs and ideas: [open an issue](https://github.com/lkyxuan/kiki/issues). Changelog: [Releases](https://github.com/lkyxuan/kiki/releases).
+Bugs and ideas: [open an issue](https://github.com/lkyxuan/kiki/issues). Changelog: [Releases](https://github.com/lkyxuan/kiki/releases). News: [@getkiki_ai](https://x.com/getkiki_ai).
 
 ---
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/kiki-sticker.svg" alt="" width="40"><br>
+<sub>Make your next miracle.</sub>
+</div>
 
 <sub>"Kiki", "奇奇" and the Kiki icon are trademarks. Signed Kiki installers are published only by us. Product names belong to their owners and indicate compatibility only.</sub>
