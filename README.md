@@ -2,76 +2,201 @@
 
 **English** · [简体中文](https://github.com/lkyxuan/kiki/blob/main/README.md)
 
-<br>
+<a href="https://getkiki.ai"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-hero.png" alt="Kiki. Your personal AI team." width="100%"></a>
 
-<a href="https://getkiki.ai"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-hero.png" alt="Kiki. Your personal AI team. Hand Kiki a goal. It breaks the work down, assigns the right agents and follows up. Many agents work in parallel, and the results come back to you in one place." width="100%"></a>
-
-<br><br>
-
-<a href="https://dl.kikibao.com/latest/Kiki-mac-arm64.dmg"><img src="https://img.shields.io/badge/Download%20for%20Mac-Apple%20silicon-ffffff?style=for-the-badge&logo=apple&logoColor=000000&labelColor=ffffff&color=5b6cf0" alt="Download for Mac (Apple silicon)" height="36"></a>
-&nbsp;
-<a href="https://dl.kikibao.com/latest/Kiki-mac-x64.dmg"><img src="https://img.shields.io/badge/Intel%20version-1d1e26?style=for-the-badge&logo=apple&logoColor=ffffff" alt="Intel version" height="36"></a>
+<h3>Your personal AI team. Runs on your Mac.</h3>
 
 <p>
   <a href="https://github.com/lkyxuan/kiki/releases/latest"><img src="https://img.shields.io/github/v/release/lkyxuan/kiki?style=flat-square&color=5b6cf0&label=release" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/macOS-13.5%2B-000000?style=flat-square&logo=apple&logoColor=white" alt="macOS 13.5+">
+  <img src="https://img.shields.io/badge/arch-arm64%20%7C%20x64-5b6cf0?style=flat-square" alt="arm64 | x64">
+  <img src="https://img.shields.io/badge/data-local%20Markdown%20%2B%20JSONL-1d1e26?style=flat-square" alt="Local Markdown + JSONL">
+  <img src="https://img.shields.io/badge/BYO-key%20or%20subscription-1d1e26?style=flat-square" alt="Bring your own key or subscription">
   <img src="https://img.shields.io/badge/status-private%20beta-f5a524?style=flat-square" alt="Private beta">
-  <a href="https://getkiki.ai"><img src="https://img.shields.io/badge/website-getkiki.ai-1d1e26?style=flat-square" alt="getkiki.ai"></a>
 </p>
 
+[Install](#-install) · [How it works](#-how-it-works) · [Engines](#-engines) · [Guardrails](#-guardrails) · [FAQ](#-faq) · [getkiki.ai](https://getkiki.ai)
+
 </div>
-
-<br>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-integrations.png" alt="Works with the AI tools you already use: Claude Code, Codex, Gemini, Cursor, Grok Bot and more. Bring any major model provider, or sign in with the subscription you already have." width="100%"></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-goals.png" alt="Give goals, not steps. No prompt engineering. Kiki understands what you want, splits the work and puts the right agents on it in parallel." width="100%"></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-parallel.png" alt="One goal, many tracks at once. Big tasks are split across agents with different strengths. They work at the same time and report back together." width="100%"></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-always-on.png" alt="Keeps working, delivers on time. Long tasks keep running in the background and schedules run on their own. A daily brief sums up progress and what needs your decision." width="100%"></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-control.png" alt="You always have the final say. Spending, sending things out and deleting can each be set to ask me first. Undo anything, budget limits, ask-first per category." width="100%"></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-learning.png" alt="The more you use it, the better it knows you. Every correction is recorded and reviewed nightly. Mistakes that keep coming back become rules every agent follows." width="100%"></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-engines.png" alt="Every agent picks its own engine: the Kiki engine (default), Claude Code, or DeepSeek Harness. Kiki always does the routing." width="100%"></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-models.png" alt="Any model you like, your data stays local. Pick a model for each job. Conversations and memory are saved as Markdown on your Mac, and your keys never touch our servers." width="100%"></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-why.png" alt="One person, working like a team. Stop babysitting. Everything in one view. No lock-in." width="100%"></p>
-
-<p align="center"><a href="https://dl.kikibao.com/latest/Kiki-mac-arm64.dmg"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-start.png" alt="Make your next miracle. Kiki for Mac is now in private beta. Install, add a model, give a goal." width="100%"></a></p>
-
-## Get started
-
-1. **Install.** Download the [Apple silicon](https://dl.kikibao.com/latest/Kiki-mac-arm64.dmg) or [Intel](https://dl.kikibao.com/latest/Kiki-mac-x64.dmg) build, drag Kiki into Applications and open it from there. Requires macOS 13.5 or later.
-2. **Enter your invite code.** The beta opens in batches; Kiki asks for your code on first launch.
-3. **Add a model.** Paste a key from any provider, or sign in with your subscription.
-4. **Give a goal.** Kiki handles the rest.
-
-Prefer Terminal? One line installs the latest version:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lkyxuan/kiki/main/packaging/install.sh | bash
 ```
 
-Kiki updates itself and rolls back automatically if a new version fails to start. If macOS says it can't verify the developer on first launch, open System Settings → Privacy & Security and click Open Anyway.
+## TL;DR
 
-## FAQ
+```yaml
+kiki:
+  what:        a personal AI team, not a chat box
+  runs_on:     your own Mac (always-on Mac mini recommended)
+  you_give:    goals, in plain language
+  it_does:     [break down, assign agents, run in parallel, follow up]
+  pings_you:   [done, needs_a_decision, failed]   # silence otherwise
+  engines:     [kiki (default), claude-code, deepseek-harness]  # per agent
+  models:      any provider, your key or your subscription      # per job
+  watches:     your local Claude Code / Codex / Gemini sessions
+  data:        plain files on your disk, no cloud account
+  lock_in:     none. take the folder and leave.
+```
 
-**How much does it cost?** You pay your model provider directly with your own account or subscription. Kiki never touches the bill.
+## ⚡ What it looks like
 
-**Where is my data stored?** Conversations, memory and settings are Markdown files on your Mac. Model keys stay on your machine.
+```text
+you  › Prepare next Wednesday's product launch
 
-**Does it work with Claude Code and Codex?** Yes. Your local sessions show up in Kiki's overview automatically, with alerts when they finish, need approval or fail.
+kiki › Split into 3 tracks, running in parallel
+       ├─ Design   12-slide keynote deck          ▸ running
+       ├─ Writer   invite + press release         ▸ needs you: "You're invited" or "Join us"?
+       └─ Video    livestream run-of-show         ▸ done ✓
 
-More answers at [getkiki.ai](https://getkiki.ai/#faq).
+you  › Join us
 
-## Changelog & feedback
+kiki › Writer resumed. I'll report back when the deck is ready.
+```
 
-What changed in each version is on the [Releases](https://github.com/lkyxuan/kiki/releases) page. Found a bug or have an idea? Open an [issue](https://github.com/lkyxuan/kiki/issues).
+Other things people hand it:
+
+```text
+› Send me an AI news brief every day at 8
+› Fix the login bug and open a PR
+› Book the best flights and hotel for Tokyo next week
+› Have Finance check October bills for double charges
+```
+
+## 🧠 How it works
+
+```mermaid
+flowchart LR
+    you((You)) -->|a goal| kiki[Kiki]
+    kiki -->|assigns| a1[Agent · Design]
+    kiki -->|assigns| a2[Agent · Writer]
+    kiki -->|assigns| a3[Agent · Research]
+    cc[Claude Code / Codex / Gemini<br/>sessions on your Mac] -.->|progress| ov
+    a1 & a2 & a3 -->|results as cards| ov[Overview + daily brief]
+    ov -->|only what needs you| you
+```
+
+- **One entry point.** You talk to Kiki. It picks the agent and the conversation, and splits a message that mixes several things.
+- **Agents own areas.** Each agent has its own skills, memory and ground rules. Create one with a name and one sentence on what it handles.
+- **Background by default.** Long jobs keep running, schedules fire on their own, tasks queue, retry and survive restarts.
+- **One overview.** Kiki's agents and your terminal coding sessions side by side: what needs you, what's moving, what just happened.
+- **Learns from corrections.** Every edit you make is reviewed nightly. A mistake seen three times becomes a rule every agent follows, with a note on where it came from.
+
+## 🔩 Engines
+
+Every agent picks its own engine. Kiki always does the routing.
+
+| Engine | Status | Use it for |
+|---|---|---|
+| **Kiki engine** | default | Fast to start, extensible. Anthropic, OpenAI, Gemini, DeepSeek and more. Built on open-source pi. |
+| **Claude Code** | supported | Coding and long tasks. Runs the real Claude Code with your own subscription, same as your terminal. |
+| **DeepSeek Harness** | supported | DeepSeek's official agent framework. DSH plugins with a UI open in Kiki's side panel. |
+
+## 🔌 Works with
+
+| | |
+|---|---|
+| **Coding agents** | Claude Code · Codex · Gemini · Cursor · Grok Bot. Done / needs approval / failed alerts, one click back to the session. More coming. |
+| **Model providers** | Anthropic · OpenAI · Gemini · DeepSeek · OpenRouter · xAI · Mistral · Kimi · Qwen, or sign in with ChatGPT / Claude / GitHub Copilot. |
+| **Extensions** | Add MCP servers in Settings, same config format as Claude and Cursor. |
+
+Pick a model per job, so the cheap work runs on cheap models:
+
+```text
+routing     → DeepSeek        low latency
+coding      → Claude Code     your account
+writing     → OpenAI          long-form
+vision      → Gemini          image understanding
+summaries   → DeepSeek        low cost
+```
+
+## 🛡 Guardrails
+
+Fully automatic by default. Irreversible actions have a net under them.
+
+| Action | What Kiki does |
+|---|---|
+| delete / overwrite | backs up first, one-click undo, trash folder instead of `rm` |
+| send things out | run, show you first, or hold a few minutes so you can cancel (your choice) |
+| spend money | pays within a monthly budget, pauses and asks once it's hit |
+| force push | creates a backup tag before pushing |
+
+<p align="center"><img src="https://raw.githubusercontent.com/lkyxuan/kiki/main/docs/assets/readme/en-control.png" alt="Activity log with undo, budget and ask-first per category" width="100%"></p>
+
+## 🔒 Your data
+
+- Conversations, memory and settings are Markdown and JSONL files under `~/kiki-data` on your Mac.
+- API keys stay on your machine and never touch our servers.
+- Kiki listens on localhost only. Remote access goes through [Tailscale](https://tailscale.com), so only your own devices can reach it.
+- Done with Kiki? Take the folder. No export step.
+
+## 📦 Install
+
+Requires macOS 13.5+. Apple silicon and Intel.
+
+```bash
+# one-liner
+curl -fsSL https://raw.githubusercontent.com/lkyxuan/kiki/main/packaging/install.sh | bash
+```
+
+Or grab the installer: [**Apple silicon .dmg**](https://dl.kikibao.com/latest/Kiki-mac-arm64.dmg) · [**Intel .dmg**](https://dl.kikibao.com/latest/Kiki-mac-x64.dmg) · [all releases](https://github.com/lkyxuan/kiki/releases)
+
+```text
+1. install      drag Kiki into Applications, open it from there
+2. invite code  the beta opens in batches; Kiki asks on first launch
+3. add a model  paste a key from any provider, or sign in
+4. give a goal  Kiki handles the rest
+```
+
+- **Self-updating.** Checks hourly, installs when idle, rolls back automatically if the new version fails to start.
+- **Always on.** Best on a Mac mini. Use it from your MacBook (Kiki.app in remote mode) or iPhone (add to Home Screen).
+- macOS says it can't verify the developer? System Settings → Privacy & Security → Open Anyway.
+
+## ⌨️ Shortcuts
+
+| Key | Action |
+|---|---|
+| `⌘K` | Find an agent |
+| `⌘J` | Command menu |
+| `⌘,` | Settings |
+| `⇧⌘K` | Connect to another Kiki |
+
+## ❓ FAQ
+
+<details>
+<summary><b>How is this different from a chat assistant?</b></summary>
+<br>
+A chat assistant answers one question at a time. Kiki takes whole tasks: it breaks them down, runs them in parallel and in the background, and only interrupts you when a decision is needed.
+</details>
+
+<details>
+<summary><b>How much does it cost?</b></summary>
+<br>
+You pay your model provider directly with your own account or subscription. Kiki never touches the bill.
+</details>
+
+<details>
+<summary><b>Does it work with Claude Code and Codex?</b></summary>
+<br>
+Yes. Local sessions show up in the overview automatically, and Kiki alerts you when they finish, need approval or fail. Agents can also run on Claude Code directly.
+</details>
+
+<details>
+<summary><b>Is it open source?</b></summary>
+<br>
+No. Kiki is closed source. Releases and feedback live in <a href="https://github.com/lkyxuan/kiki">lkyxuan/kiki</a>; this repository no longer holds source code. Code published here earlier remains under the license it was released with (FSL-1.1-ALv2) and is still in the commit history.
+</details>
+
+<details>
+<summary><b>How do I get an invite code?</b></summary>
+<br>
+The beta opens in batches. Enter your code the first time you open Kiki.
+</details>
+
+## 💬 Feedback
+
+Bugs and ideas: [open an issue](https://github.com/lkyxuan/kiki/issues). Changelog: [Releases](https://github.com/lkyxuan/kiki/releases).
 
 ---
 
-<sub>Kiki's releases and feedback live in <a href="https://github.com/lkyxuan/kiki">lkyxuan/kiki</a>. This repository no longer holds source code; Kiki is closed source, and code published here in the past remains under the license it was released with (FSL-1.1-ALv2) and is still in the commit history. "Kiki", "奇奇" and the Kiki icon are trademarks, and signed Kiki installers are published only by us. Product names and logos shown belong to their owners and indicate compatibility only.</sub>
+<sub>"Kiki", "奇奇" and the Kiki icon are trademarks. Signed Kiki installers are published only by us. Product names belong to their owners and indicate compatibility only.</sub>
